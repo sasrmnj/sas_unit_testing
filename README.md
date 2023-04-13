@@ -52,7 +52,7 @@ filename utf url "https://raw.githubusercontent.com/Gaadek/sas_unit_testing/main
 - filenames must be lowercase, without spaces
 - macro names must be lowercase
 - one macro per file
-- `ut_` prefixes for *u*nit *t*esting macro functions
+- `ut_` prefixes for **u**nit **t**esting macro functions
 - follow verb-noun convention
 - unix style line endings (lf)
 - UTF-8
