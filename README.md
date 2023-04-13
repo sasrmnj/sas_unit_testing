@@ -5,7 +5,7 @@ Welcome to another SAS Unit Testing framework. This library provides a set of re
 You can use the framweork in just two lines of SAS code:
 
 ```sas
-filename utf url "https://raw.githubusercontent.com/gaadek/sas_unit_testing/main/unit_testing.sas";
+filename utf url "https://raw.githubusercontent.com/Gaadek/sas_unit_testing/main/unit_testing.sas";
 %include utf;
 ```
 
@@ -40,7 +40,7 @@ Then, include the framework like this:
 
 Alternatively, you can just refer the framework from the main repository like this:
 ```sas
-filename utf url "https://raw.githubusercontent.com/gaadek/sas_unit_testing/main/unit_testing.sas";
+filename utf url "https://raw.githubusercontent.com/Gaadek/sas_unit_testing/main/unit_testing.sas";
 %include utf;
 ```
 
