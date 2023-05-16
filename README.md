@@ -1,8 +1,8 @@
 # SAS Unit testing
 
-Welcome to another SAS Unit Testing framework. This library provides a set of ready-to-use macro functions to automate the testing and validation of SAS scripts.
+Welcome to "another" SAS Unit Testing framework. This library provides a set of ready-to-use macro functions to automate the testing and validation of SAS scripts.
 
-You can use the framweork in just two lines of SAS code:
+You can use the framework in just two lines of SAS code:
 
 ```sas
 filename utf url "https://raw.githubusercontent.com/Gaadek/sas_unit_testing/main/unit_testing.sas";
