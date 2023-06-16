@@ -31,19 +31,19 @@
             ;
         quit;
 
-        %ut_init(type=ut_assert_dataset_tc, description=&description., expected_result=&expected_result.);
+        %ut_tst_init(type=ut_assert_dataset_tc, description=&description., expected_result=&expected_result.);
 
         *-- Evaluate the test case --*;
         data _null_;
             set &ds. (firstobs=&_i_. obs=&_i_.);
 
             if %unquote(&eval_stmt.) then do;
-                call symputx('ut_stat', "PASS");
-                call symputx('ut_det', "Test '&eval_stmt.' valid.^n" || strip(&det_var.));
+                call symputx('ut_tst_stat', "PASS");
+                call symputx('ut_tst_det', "Test '&eval_stmt.' valid.^n" || strip(&det_var.));
             end;
             else do;
-                call symputx('ut_stat', "FAIL");
-                call symputx('ut_det', "Test '&eval_stmt.' is not successful.^n" || strip(&det_var.));
+                call symputx('ut_tst_stat', "FAIL");
+                call symputx('ut_tst_det', "Test '&eval_stmt.' is not successful.^n" || strip(&det_var.));
             end;
         run;
 

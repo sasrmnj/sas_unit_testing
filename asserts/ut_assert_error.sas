@@ -7,7 +7,7 @@
     error_msg:          error message expected either in the SAS log or in the system
     expected_result:    either PASS or FAIL
 */
-    %ut_init(type=ut_assert_error, description=&description., expected_result=&expected_result.);
+    %ut_tst_init(type=ut_assert_error, description=&description., expected_result=&expected_result.);
 
     *-- Remove the leading "ERROR:" tag if any --*;
     %let error_msg = %sysfunc(prxchange(s/^ERROR:\s*(.*)$/$1/oi, -1, %nrbquote(&error_msg.)));
@@ -18,17 +18,17 @@
         %if %sysevalf(%superq(error_msg) ne, boolean) %then %do;
             *-- If expected error message is provided, then SAS error message must match --*;
             %if %nrbquote(&syserrortext.) = %nrbquote(&error_msg.) %then %do;
-                %let ut_res = PASS;
-                %let ut_det = Expected error is:^n%nrbquote(&error_msg.)^n^nError reported by SAS is:^n%nrbquote(&syserrortext.);
+                %let ut_tst_res = PASS;
+                %let ut_tst_det = Expected error is:^n%nrbquote(&error_msg.)^n^nError reported by SAS is:^n%nrbquote(&syserrortext.);
             %end;
             %else %do;
-                %let ut_res = FAIL;
-                %let ut_det = Expected error is:^n%nrbquote(&error_msg.)^n^nError reported by SAS is:^n%nrbquote(&syserrortext.);
+                %let ut_tst_res = FAIL;
+                %let ut_tst_det = Expected error is:^n%nrbquote(&error_msg.)^n^nError reported by SAS is:^n%nrbquote(&syserrortext.);
             %end;
         %end;
         %else %do;
-            %let ut_res = PASS;
-            %let ut_det = Error reported by SAS is:^n%nrbquote(&syserrortext.);
+            %let ut_tst_res = PASS;
+            %let ut_tst_det = Error reported by SAS is:^n%nrbquote(&syserrortext.);
         %end;
     %end;
 

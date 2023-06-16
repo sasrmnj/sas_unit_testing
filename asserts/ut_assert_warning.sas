@@ -7,7 +7,7 @@
     warning_msg:        warning message expected either in the SAS log or in the system
     expected_result:    either PASS or FAIL
 */
-    %ut_init(type=ut_assert_warning, description=&description., expected_result=&expected_result.);
+    %ut_tst_init(type=ut_assert_warning, description=&description., expected_result=&expected_result.);
 
     *-- Remove the leading "WARNING:" tag if any --*;
     %let warning_msg = %sysfunc(prxchange(s/^WARNING:\s*(.*)$/$1/oi, -1, %nrbquote(&warning_msg.)));
@@ -18,17 +18,17 @@
         %if %sysevalf(%superq(warning_msg) ne, boolean) %then %do;
             *-- If expected warning message is provided, then SAS warning message must match --*;
             %if %nrbquote(&syswarningtext.) = %nrbquote(&warning_msg.) %then %do;
-                %let ut_res = PASS;
-                %let ut_det = Expected warning is:^n%nrbquote(&warning_msg.)^n^nWarning reported by SAS is:^n%nrbquote(&syswarningtext.);
+                %let ut_tst_res = PASS;
+                %let ut_tst_det = Expected warning is:^n%nrbquote(&warning_msg.)^n^nWarning reported by SAS is:^n%nrbquote(&syswarningtext.);
             %end;
             %else %do;
-                %let ut_res = FAIL;
-                %let ut_det = Expected warning is:^n%nrbquote(&warning_msg.)^n^nWarning reported by SAS is:^n%nrbquote(&syswarningtext.);
+                %let ut_tst_res = FAIL;
+                %let ut_tst_det = Expected warning is:^n%nrbquote(&warning_msg.)^n^nWarning reported by SAS is:^n%nrbquote(&syswarningtext.);
             %end;
         %end;
         %else %do;
-            %let ut_res = PASS;
-            %let ut_det = Warning reported by SAS is:^n%nrbquote(&syswarningtext.);
+            %let ut_tst_res = PASS;
+            %let ut_tst_det = Warning reported by SAS is:^n%nrbquote(&syswarningtext.);
         %end;
     %end;
 

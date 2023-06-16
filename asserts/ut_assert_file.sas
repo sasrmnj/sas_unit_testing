@@ -5,15 +5,15 @@
     filepath:           the expected file full path
     expected_result:    either PASS or FAIL
 */
-    %ut_init(type=ut_assert_file, description=&description., expected_result=&expected_result.);
+    %ut_tst_init(type=ut_assert_file, description=&description., expected_result=&expected_result.);
 
     %if %sysfunc(fileexist("&filepath.")) %then %do;
-        %let ut_res = PASS;
-        %let ut_det = Expected file %nrbquote(&filepath.) found;
+        %let ut_tst_res = PASS;
+        %let ut_tst_det = Expected file %nrbquote(&filepath.) found;
     %end;
     %else %do;
-        %let ut_res = FAIL;
-        %let ut_det = Expected file %nrbquote(&filepath.) not found;
+        %let ut_tst_res = FAIL;
+        %let ut_tst_det = Expected file %nrbquote(&filepath.) not found;
     %end;
 
     %ut_log_result;

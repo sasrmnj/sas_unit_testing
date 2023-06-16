@@ -4,22 +4,22 @@
     description:        description to explain why an issue is not expected
     expected_result:    either PASS or FAIL
 */
-    %ut_init(type=ut_assert_noissue, description=&description., expected_result=&expected_result.);
+    %ut_tst_init(type=ut_assert_noissue, description=&description., expected_result=&expected_result.);
 
     %if %sysevalf(%superq(syswarningtext) =, boolean) and %sysevalf(%superq(syserrortext) =, boolean) and &syscc. = 0 %then %do;
-        %let ut_res = PASS;
-        %let ut_det = No warning and no error message reported by SAS.;
+        %let ut_tst_res = PASS;
+        %let ut_tst_det = No warning and no error message reported by SAS.;
     %end;
     %else %do;
-        %let ut_res = FAIL;
+        %let ut_tst_res = FAIL;
         %if %sysevalf(%superq(syserrortext) ne, boolean) %then %do;
-            %let ut_det = Error reported by SAS is:^n%nrbquote(&syserrortext.)^n^nwhereas no error was expected;
+            %let ut_tst_det = Error reported by SAS is:^n%nrbquote(&syserrortext.)^n^nwhereas no error was expected;
         %end;
         %else %if %sysevalf(%superq(syswarningtext) ne, boolean) %then %do;
-            %let ut_det = Warning reported by SAS is:^n%nrbquote(&syswarningtext.)^n^nwhereas no warning was expected;
+            %let ut_tst_det = Warning reported by SAS is:^n%nrbquote(&syswarningtext.)^n^nwhereas no warning was expected;
         %end;
         %else %do;
-            %let ut_det = SAS session status (syscc) reported by SAS is:^n&syscc^n^nwhereas 0 was expected;
+            %let ut_tst_det = SAS session status (syscc) reported by SAS is:^n&syscc^n^nwhereas 0 was expected;
         %end;
     %end;
 

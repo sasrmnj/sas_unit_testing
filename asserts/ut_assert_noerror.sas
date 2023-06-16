@@ -5,15 +5,15 @@
     expected_result:    either PASS or FAIL
 */
     *-- Create a new test --*;
-    %ut_init(type=ut_assert_noerror, description=&description., expected_result=&expected_result.);
+    %ut_tst_init(type=ut_assert_noerror, description=&description., expected_result=&expected_result.);
 
     %if %sysevalf(%superq(syserrortext) =, boolean) and &syscc. < 5 %then %do;
-        %let ut_res = PASS;
-        %let ut_det = No error message reported by SAS;
+        %let ut_tst_res = PASS;
+        %let ut_tst_det = No error message reported by SAS;
     %end;
     %else %do;
-        %let ut_res = FAIL;
-        %let ut_det = Error reported by SAS is:^n%nrbquote(&syserrortext.)^n^nwhereas no error was expected;
+        %let ut_tst_res = FAIL;
+        %let ut_tst_det = Error reported by SAS is:^n%nrbquote(&syserrortext.)^n^nwhereas no error was expected;
     %end;
 
     %ut_log_result;

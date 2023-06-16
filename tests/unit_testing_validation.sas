@@ -51,38 +51,38 @@
 );
 
 %ut_assert_macro(
-    description = %nrstr("ut_setup" must create macro variable "ut_seq"),
-    stmt        = %nrstr(%symexist(ut_seq))
+    description = %nrstr("ut_setup" must create macro variable "ut_tst_seq"),
+    stmt        = %nrstr(%symexist(ut_tst_seq))
 );
 
 %ut_assert_macro(
-    description = %nrstr("ut_setup" must create macro variable "ut_id"),
-    stmt        = %nrstr(%symexist(ut_id))
+    description = %nrstr("ut_setup" must create macro variable "ut_tst_id"),
+    stmt        = %nrstr(%symexist(ut_tst_id))
 );
 
 %ut_assert_macro(
-    description = %nrstr("ut_setup" must create macro variable "ut_type"),
-    stmt        = %nrstr(%symexist(ut_type))
+    description = %nrstr("ut_setup" must create macro variable "ut_tst_type"),
+    stmt        = %nrstr(%symexist(ut_tst_type))
 );
 
 %ut_assert_macro(
-    description = %nrstr("ut_setup" must create macro variable "ut_desc"),
-    stmt        = %nrstr(%symexist(ut_desc))
+    description = %nrstr("ut_setup" must create macro variable "ut_tst_desc"),
+    stmt        = %nrstr(%symexist(ut_tst_desc))
 );
 
 %ut_assert_macro(
-    description = %nrstr("ut_setup" must create macro variable "ut_exp_res"),
-    stmt        = %nrstr(%symexist(ut_exp_res))
+    description = %nrstr("ut_setup" must create macro variable "ut_tst_exp_res"),
+    stmt        = %nrstr(%symexist(ut_tst_exp_res))
 );
 
 %ut_assert_macro(
-    description = %nrstr("ut_setup" must create macro variable "ut_res"),
-    stmt        = %nrstr(%symexist(ut_res))
+    description = %nrstr("ut_setup" must create macro variable "ut_tst_res"),
+    stmt        = %nrstr(%symexist(ut_tst_res))
 );
 
 %ut_assert_macro(
-    description = %nrstr("ut_setup" must create macro variable "ut_det"),
-    stmt        = %nrstr(%symexist(ut_det))
+    description = %nrstr("ut_setup" must create macro variable "ut_tst_det"),
+    stmt        = %nrstr(%symexist(ut_tst_det))
 );
 
 
@@ -90,16 +90,16 @@
 
 *-- The expected dataset --*;
 data expected_dataset (drop = _i_);
-    attrib  ut_grp_id   format=best.    label="Testing group ID"
-            ut_grp_desc format=$200.    label="Testing group description"
-            ut_seq      format=best.    label="Test ordering value"
-            ut_id       format=$20.     label="Test ID"
-            ut_type     format=$30.     label="Test type"
-            ut_desc     format=$200.    label="Test description"
-            ut_exp_res  format=$10.     label="Expected test result"
-            ut_res      format=$10.     label="Test result"
-            ut_stat     format=$10.     label="Test status"
-            ut_det      format=$500.    label="Test details"
+    attrib  ut_grp_id       format=best.    label="Testing group ID"
+            ut_grp_desc     format=$200.    label="Testing group description"
+            ut_tst_seq      format=best.    label="Test ordering value"
+            ut_tst_id       format=$20.     label="Test ID"
+            ut_tst_type     format=$30.     label="Test type"
+            ut_tst_desc     format=$200.    label="Test description"
+            ut_tst_exp_res  format=$10.     label="Expected test result"
+            ut_tst_res      format=$10.     label="Test result"
+            ut_tst_stat     format=$10.     label="Test status"
+            ut_tst_det      format=$500.    label="Test details"
     ;
 
     set _null_;
@@ -130,16 +130,16 @@ run;
 *-- Store the value of ut_grp_id before calling ut_grp_init --*;
 %let prv_ut_grp_id = &ut_grp_id.;
 
-*-- Set ut_seq value to something <> 0 to ensure it is reset by ut_grp_init --*;
-%let ut_seq = 1;
+*-- Set ut_tst_seq value to something <> 0 to ensure it is reset by ut_grp_init --*;
+%let ut_tst_seq = 1;
 
 *-- Define a custom description --*;
 %let custom_desc=Testing of "ut_grp_init";
 
 %ut_grp_init(description=&custom_desc.);
 
-*-- Copy value of ut_seq because any unit testing helper will update that value --*;
-%let ut_seq_copy = &ut_seq.;
+*-- Copy value of ut_tst_seq because any unit testing helper will update that value --*;
+%let ut_tst_seq_copy = &ut_tst_seq.;
 
 %ut_assert_macro(
     description = %nrstr("ut_grp_init" must increment ut_grp_id by 1),
@@ -147,8 +147,8 @@ run;
 );
 
 %ut_assert_macro(
-    description = %nrstr("ut_grp_init" must reset the value of ut_seq to 0),
-    stmt        = %nrstr(&ut_seq_copy. = 0)
+    description = %nrstr("ut_grp_init" must reset the value of ut_tst_seq to 0),
+    stmt        = %nrstr(&ut_tst_seq_copy. = 0)
 );
 
 %ut_assert_macro(
@@ -165,58 +165,58 @@ run;
 
 
 *-------------------------------------------------------------------------*;
-*-- Testing of "ut_init"                                                --*;
+*-- Testing of "ut_tst_init"                                            --*;
 *-------------------------------------------------------------------------*;
 
-%ut_grp_init(description=Testing of "ut_init");
+%ut_grp_init(description=Testing of "ut_tst_init");
 
 *-- Define parameters in macro varialbes to allow testing --*;
-%let prv_ut_seq         = &ut_seq.;
-%let custom_type        = custom_type;
-%let custom_desc        = Testing of "ut_init";
-%let custom_ut_exp_res  = PASS;
+%let prv_ut_tst_seq         = &ut_tst_seq.;
+%let custom_type            = custom_type;
+%let custom_desc            = Testing of "ut_tst_init";
+%let custom_ut_tst_exp_res  = PASS;
 
-%ut_init(type=&custom_type., description=&custom_desc., expected_result=&custom_ut_exp_res.);
+%ut_tst_init(type=&custom_type., description=&custom_desc., expected_result=&custom_ut_tst_exp_res.);
 
 *-- Copy values of macro variables because any unit testing helper will update their value --*;
-%let ut_seq_copy        = &ut_seq.;
-%let ut_type_copy       = &ut_type.;
-%let ut_desc_copy       = &ut_desc.;
-%let ut_exp_res_copy    = &ut_exp_res.;
+%let ut_tst_seq_copy        = &ut_tst_seq.;
+%let ut_tst_type_copy       = &ut_tst_type.;
+%let ut_tst_desc_copy       = &ut_tst_desc.;
+%let ut_tst_exp_res_copy    = &ut_tst_exp_res.;
 
 %ut_assert_macro(
-    description = %nrstr("ut_init" must increment ut_seq by 1),
-    stmt        = %nrstr(&ut_seq_copy. = &prv_ut_seq. + 1)
+    description = %nrstr("ut_tst_init" must increment ut_tst_seq by 1),
+    stmt        = %nrstr(&ut_tst_seq_copy. = &prv_ut_tst_seq. + 1)
 );
 
 %ut_assert_macro(
-    description = %nrstr("ut_init" must set the value of ut_id),
-    stmt        = %nrstr(&ut_id. = %cmpres(&ut_grp_id..&ut_seq.))
+    description = %nrstr("ut_tst_init" must set the value of ut_tst_id),
+    stmt        = %nrstr(&ut_tst_id. = %cmpres(&ut_grp_id..&ut_tst_seq.))
 );
 
 %ut_assert_macro(
-    description = %nrstr("ut_init" must set the value of ut_type with the given type value),
-    stmt        = %nrstr(&ut_type_copy. = &custom_type.)
+    description = %nrstr("ut_tst_init" must set the value of ut_tst_type with the given type value),
+    stmt        = %nrstr(&ut_tst_type_copy. = &custom_type.)
 );
 
 %ut_assert_macro(
-    description = %nrstr("ut_init" must set the value of ut_desc),
-    stmt        = %nrstr(&ut_desc_copy. = &custom_desc.)
+    description = %nrstr("ut_tst_init" must set the value of ut_tst_desc),
+    stmt        = %nrstr(&ut_tst_desc_copy. = &custom_desc.)
 );
 
 %ut_assert_macro(
-    description = %nrstr("ut_init" must set the value of ut_exp_res),
-    stmt        = %nrstr(&ut_exp_res_copy. = &custom_ut_exp_res.)
+    description = %nrstr("ut_tst_init" must set the value of ut_tst_exp_res),
+    stmt        = %nrstr(&ut_tst_exp_res_copy. = &custom_ut_tst_exp_res.)
 );
 
 %ut_assert_macro(
-    description = %nrstr("ut_init" must reset the value of ut_res),
-    stmt        = %nrstr(&ut_res. = FAIL)
+    description = %nrstr("ut_tst_init" must reset the value of ut_tst_res),
+    stmt        = %nrstr(&ut_tst_res. = FAIL)
 );
 
 %ut_assert_macro(
-    description = %nrstr("ut_init" must reset the value of ut_det),
-    stmt        = %nrstr(&ut_det. =)
+    description = %nrstr("ut_tst_init" must reset the value of ut_tst_det),
+    stmt        = %nrstr(&ut_tst_det. =)
 );
 
 
@@ -366,18 +366,18 @@ run;
 
 *-- TEST: call to "ut_search_log" must NOT increment ut_grp_id by 1 --*;
 
-*-- Store ut_seq before calling ut_assert_log --*;
-%let prv_ut_seq = &ut_seq.;
+*-- Store ut_tst_seq before calling ut_assert_log --*;
+%let prv_ut_tst_seq = &ut_tst_seq.;
 
 %ut_search_log(log_file=&work./sample.log, log_type=ErrOr, log_msg=MeSsaGe, res_var=res);
 
-*-- Store ut_seq after calling ut_assert_log --*;
-%let cur_ut_seq = &ut_seq.;
+*-- Store ut_tst_seq after calling ut_assert_log --*;
+%let cur_ut_tst_seq = &ut_tst_seq.;
 
-*-- Ensure ut_seq did not change --*;
+*-- Ensure ut_tst_seq did not change --*;
 %ut_assert_macro(
-    description = "ut_search_log" must not alter ut_seq value,
-    stmt        = %nrstr(&cur_ut_seq. = &prv_ut_seq.)
+    description = "ut_search_log" must not alter ut_tst_seq value,
+    stmt        = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq.)
 );
 
 
@@ -389,21 +389,21 @@ run;
 
 *-- TEST: call to "ut_assert_log" must increment ut_grp_id by 1 --*;
 
-*-- Store ut_seq before calling ut_assert_log --*;
-%let prv_ut_seq = &ut_seq.;
+*-- Store ut_tst_seq before calling ut_assert_log --*;
+%let prv_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_log(
-    description = "ut_assert_log" must increment ut_seq by 1 (increment),
+    description = "ut_assert_log" must increment ut_tst_seq by 1 (increment),
     log_msg     = note
 );
 
-*-- Store ut_seq after calling ut_assert_log --*;
-%let cur_ut_seq = &ut_seq.;
+*-- Store ut_tst_seq after calling ut_assert_log --*;
+%let cur_ut_tst_seq = &ut_tst_seq.;
 
-*-- Ensure ut_seq has been incremented by ut_assert_log --*;
+*-- Ensure ut_tst_seq has been incremented by ut_assert_log --*;
 %ut_assert_macro(
-    description = "ut_assert_log" must increment ut_seq by 1 (test increment),
-    stmt        = %nrstr(&cur_ut_seq. = &prv_ut_seq. + 1)
+    description = "ut_assert_log" must increment ut_tst_seq by 1 (test increment),
+    stmt        = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 1)
 );
 
 
@@ -433,26 +433,24 @@ run;
 %ut_grp_init(description=Testing of "ut_assert_error");
 
 *-- TEST: call to "ut_assert_error" must increment ut_grp_id by 1 --*;
-%let prv_ut_seq = &ut_seq.;
+%let prv_ut_tst_seq = &ut_tst_seq.;
 
 *-- Raise an error so the call to ut_assert_error will not appear as a validation error --*;
 %ut_run(
     stmt = %nrstr(
         %put ERROR: error message;
-
     )
 );
 
 %ut_assert_error(
-    description = "ut_assert_error" must increment ut_seq by 1 (increment)
+    description = "ut_assert_error" must increment ut_tst_seq by 1 (increment)
 );
 
-%let cur_ut_seq = &ut_seq.;
+%let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
-    description = "ut_assert_error" must increment ut_seq by 1 (test increment),
-    stmt        = %nrstr(&cur_ut_seq. = &prv_ut_seq. + 1)
-
+    description = "ut_assert_error" must increment ut_tst_seq by 1 (test increment),
+    stmt        = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 1)
 );
 
 
@@ -509,17 +507,17 @@ run;
 %ut_grp_init(description=Testing of "ut_assert_noerror");
 
 *-- TEST: call to "ut_assert_noerror" must increment ut_grp_id by 1 --*;
-%let prv_ut_seq = &ut_seq.;
+%let prv_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_noerror(
-    description     = %nrstr("ut_assert_noerror" must increment ut_seq by 1 (increment))
+    description     = %nrstr("ut_assert_noerror" must increment ut_tst_seq by 1 (increment))
 );
 
-%let cur_ut_seq = &ut_seq.;
+%let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
-    description     = %nrstr("ut_assert_noerror" must increment ut_seq by 1 (test)),
-    stmt            = %nrstr(&cur_ut_seq. = &prv_ut_seq. + 1)
+    description     = %nrstr("ut_assert_noerror" must increment ut_tst_seq by 1 (test)),
+    stmt            = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 1)
 );
 
 *-- TEST: in case of error --*;
@@ -559,25 +557,24 @@ run;
 %ut_grp_init(description=Testing of "ut_assert_warning");
 
 *-- TEST: call to "ut_assert_warning" must increment ut_grp_id by 1 --*;
-%let prv_ut_seq = &ut_seq.;
+%let prv_ut_tst_seq = &ut_tst_seq.;
 
 *-- Raise a warning so the call to ut_assert_warning will not appear as a validation error --*;
 %ut_run(
     stmt = %nrstr(
         %put WARNING: warning message;
-
     )
 );
 
 %ut_assert_warning(
-    description     = %nrstr("ut_assert_warning" must increment ut_seq by 1 (increment))
+    description     = %nrstr("ut_assert_warning" must increment ut_tst_seq by 1 (increment))
 );
 
-%let cur_ut_seq = &ut_seq.;
+%let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
-    description     = %nrstr("ut_assert_warning" must increment ut_seq by 1 (test)),
-    stmt            = %nrstr(&cur_ut_seq. = &prv_ut_seq. + 1)
+    description     = %nrstr("ut_assert_warning" must increment ut_tst_seq by 1 (test)),
+    stmt            = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 1)
 );
 
 *-- TEST: in case of warning --*;
@@ -632,17 +629,17 @@ run;
 %ut_grp_init(description=Testing of "ut_assert_nowarning");
 
 *-- TEST: call to "ut_assert_nowarning" must increment ut_grp_id by 1 --*;
-%let prv_ut_seq = &ut_seq.;
+%let prv_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_nowarning(
-    description     = %nrstr("ut_assert_nowarning" must increment ut_seq by 1)
+    description     = %nrstr("ut_assert_nowarning" must increment ut_tst_seq by 1)
 );
 
-%let cur_ut_seq = &ut_seq.;
+%let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
-    description     = %nrstr("ut_assert_nowarning" must increment ut_seq by 1 (test)),
-    stmt            = %nrstr(&cur_ut_seq. = &prv_ut_seq. + 1)
+    description     = %nrstr("ut_assert_nowarning" must increment ut_tst_seq by 1 (test)),
+    stmt            = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 1)
 );
 
 
@@ -675,7 +672,6 @@ run;
 );
 
 
-
 *-------------------------------------------------------------------------*;
 *-- Testing of "ut_assert_noissue"                                      --*;
 *-------------------------------------------------------------------------*;
@@ -683,17 +679,17 @@ run;
 %ut_grp_init(description=Testing of "ut_assert_noissue");
 
 *-- TEST: call to "ut_assert_noissue" must increment ut_grp_id by 1 --*;
-%let prv_ut_seq = &ut_seq.;
+%let prv_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_noissue(
-    description     = %nrstr("ut_assert_noissue" must increment ut_seq by 1)
+    description     = %nrstr("ut_assert_noissue" must increment ut_tst_seq by 1)
 );
 
-%let cur_ut_seq = &ut_seq.;
+%let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
-    description     = %nrstr("ut_assert_noissue" must increment ut_seq by 1 (test)),
-    stmt            = %nrstr(&cur_ut_seq. = &prv_ut_seq. + 1)
+    description     = %nrstr("ut_assert_noissue" must increment ut_tst_seq by 1 (test)),
+    stmt            = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 1)
 );
 
 
@@ -763,18 +759,18 @@ run;
 %ut_grp_init(description=Testing of "ut_assert_file");
 
 *-- TEST: call to "ut_assert_file" must increment ut_grp_id by 1 --*;
-%let prv_ut_seq = &ut_seq.;
+%let prv_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_file(
-    description = %nrstr("ut_assert_file" must increment ut_seq by 1 (increment)),
+    description = %nrstr("ut_assert_file" must increment ut_tst_seq by 1 (increment)),
     filepath    = &macro_path.
 );
 
-%let cur_ut_seq = &ut_seq.;
+%let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
-    description = %nrstr("ut_assert_file" must increment ut_seq by 1 (test)),
-    stmt        = %nrstr(&cur_ut_seq. = &prv_ut_seq. + 1)
+    description = %nrstr("ut_assert_file" must increment ut_tst_seq by 1 (test)),
+    stmt        = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 1)
 );
 
 *-- Testing in case of existing file --*;
@@ -798,18 +794,18 @@ run;
 %ut_grp_init(description=Testing of "ut_assert_macro");
 
 *-- TEST: call to "ut_assert_macro" must increment ut_grp_id by 1 --*;
-%let prv_ut_seq = &ut_seq.;
+%let prv_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
-    description = %nrstr("ut_assert_macro" must increment ut_seq by 1 (increment)),
+    description = %nrstr("ut_assert_macro" must increment ut_tst_seq by 1 (increment)),
     stmt        = %nrstr(1 = 1)
 );
 
-%let cur_ut_seq = &ut_seq.;
+%let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
-    description = %nrstr("ut_assert_macro" must increment ut_seq by 1 (test)),
-    stmt        = %nrstr(&cur_ut_seq. = &prv_ut_seq. + 1)
+    description = %nrstr("ut_assert_macro" must increment ut_tst_seq by 1 (test)),
+    stmt        = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 1)
 );
 
 
@@ -835,19 +831,19 @@ run;
 %ut_grp_init(description=Testing of "ut_assert_dataset_structure");
 
 *-- TEST: call to "ut_assert_dataset_structure" must increment ut_grp_id by 1 --*;
-%let prv_ut_seq = &ut_seq.;
+%let prv_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_dataset_structure(
-    description = %nrstr("ut_assert_dataset_structure" must increment ut_seq by 1 (increment)),
+    description = %nrstr("ut_assert_dataset_structure" must increment ut_tst_seq by 1 (increment)),
     ds_01       = _ut_results,
     ds_02       = _ut_results
 );
 
-%let cur_ut_seq = &ut_seq.;
+%let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
-    description = %nrstr("ut_assert_dataset_structure" must increment ut_seq by 1 (test)),
-    stmt        = %nrstr(&cur_ut_seq. = &prv_ut_seq. + 1)
+    description = %nrstr("ut_assert_dataset_structure" must increment ut_tst_seq by 1 (test)),
+    stmt        = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 1)
 );
 
 
@@ -932,19 +928,19 @@ run;
 %ut_grp_init(description=Testing of "ut_assert_dataset_content");
 
 *-- TEST: call to "ut_assert_dataset_content" must increment ut_grp_id by 1 --*;
-%let prv_ut_seq = &ut_seq.;
+%let prv_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_dataset_content(
-    description = %nrstr("ut_assert_dataset_content" must increment ut_seq by 1 (increment)),
+    description = %nrstr("ut_assert_dataset_content" must increment ut_tst_seq by 1 (increment)),
     ds_01       = _ut_results,
     ds_02       = _ut_results
 );
 
-%let cur_ut_seq = &ut_seq.;
+%let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
-    description = %nrstr("ut_assert_dataset_content" must increment ut_seq by 1 (test)),
-    stmt        = %nrstr(&cur_ut_seq. = &prv_ut_seq. + 1)
+    description = %nrstr("ut_assert_dataset_content" must increment ut_tst_seq by 1 (test)),
+    stmt        = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 1)
 );
 
 
@@ -1012,19 +1008,19 @@ run;
 %ut_grp_init(description=Testing of "ut_assert_dataset");
 
 *-- TEST: call to "ut_assert_dataset" must increment ut_grp_id by 1 --*;
-%let prv_ut_seq = &ut_seq.;
+%let prv_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_dataset(
-    description = %nrstr("ut_assert_dataset" must increment ut_seq by 1 (increment)),
+    description = %nrstr("ut_assert_dataset" must increment ut_tst_seq by 1 (increment)),
     ds_01       = _ut_results,
     ds_02       = _ut_results
 );
 
-%let cur_ut_seq = &ut_seq.;
+%let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
-    description = %nrstr("ut_assert_dataset" must increment ut_seq by 1 (test)),
-    stmt        = %nrstr(&cur_ut_seq. = &prv_ut_seq. + 1)
+    description = %nrstr("ut_assert_dataset" must increment ut_tst_seq by 1 (test)),
+    stmt        = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 1)
 );
 
 

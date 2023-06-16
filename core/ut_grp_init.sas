@@ -9,7 +9,7 @@
     %let ut_grp_id = %eval(&ut_grp_id. + 1);
 
     *-- Reset test order --*;
-    %let ut_seq = 0;
+    %let ut_tst_seq = 0;
 
     *-- Set test group description --*;
     %if %sysevalf(%superq(description) ne, boolean) %then   %let ut_grp_desc = %nrbquote(&description.);

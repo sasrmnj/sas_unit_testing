@@ -5,7 +5,7 @@
     ds_01:              name of the first dataset
     ds_02:              name of the second dataset
 */
-    %ut_init(type=ut_assert_dataset_structure, description=&description., expected_result=&expected_result.);
+    %ut_tst_init(type=ut_assert_dataset_structure, description=&description., expected_result=&expected_result.);
 
     proc contents data=&ds_01. out=content_01(keep=name type length varnum label format formatl formatd informat informl informd just npos) noprint;
     run;
@@ -18,12 +18,12 @@
 
     *-- Check the result of the proc compare (store into sysinfo) --*;
     %if &sysinfo. = 0 %then %do;
-        %let ut_res = PASS;
-        %let ut_det = Datasets &ds_01. and &ds_02. have the same structure;
+        %let ut_tst_res = PASS;
+        %let ut_tst_det = Datasets &ds_01. and &ds_02. have the same structure;
     %end;
     %else %do;
-        %let ut_res = FAIL;
-        %let ut_det = Datasets &ds_01. and &ds_02. have different structures;
+        %let ut_tst_res = FAIL;
+        %let ut_tst_det = Datasets &ds_01. and &ds_02. have different structures;
     %end;
 
     %ut_log_result;
