@@ -1,8 +1,8 @@
 /**************************************************************************************************************************************************
-Program Name:   unit_testing.sas
-Purpose:        SAS unit testing framework
-Date created:   13APR2023
-Details:        The `build.sas` file in the repo is used to create this file.
+Program Name   : unit_testing.sas
+Purpose        : SAS unit testing framework
+Date created   : 16JUN2023
+Details        : The `build.sas` file in the repo is used to create this file.
 ***************************************************************************************************************************************************/
 
 %macro ut_setup;
@@ -10,7 +10,10 @@ Details:        The `build.sas` file in the repo is used to create this file.
     Macro to set up the unit testing environment.
     To be run first and once.
 */
-    %global ut_grp_id ut_grp_desc ut_tst_seq ut_tst_id ut_tst_type ut_tst_desc ut_tst_exp_res ut_tst_res ut_tst_det ut_work_dir ut_log_file;
+    %global ut_grp_id ut_grp_desc
+            ut_tst_seq ut_tst_id ut_tst_type ut_tst_desc ut_tst_exp_res ut_tst_res ut_tst_det
+            ut_work_dir ut_log_file
+    ;
 
     *--
         Unique identifier of a group of tests.
@@ -20,7 +23,7 @@ Details:        The `build.sas` file in the repo is used to create this file.
 
     *--
         Description of a group of tests.
-        Value is set when invoking "ut_tst_init"
+        Value is set when invoking "ut_grp_init"
         Value is output in the validation report.
     --*;
     %let ut_grp_desc = ;
@@ -192,12 +195,12 @@ Details:        The `build.sas` file in the repo is used to create this file.
 */
     *-- Define test status --*;
     %if %lowcase(&ut_tst_res.) = %lowcase(&ut_tst_exp_res.) %then   %let ut_tst_stat = PASS;
-    %else                                                   %let ut_tst_stat = FAIL;
+    %else                                                           %let ut_tst_stat = FAIL;
 
     proc sql noprint;
         insert into _ut_results
-        set ut_grp_id   = &ut_grp_id.,
-            ut_grp_desc = "%nrbquote(&ut_grp_desc.)",
+        set ut_grp_id       = &ut_grp_id.,
+            ut_grp_desc     = "%nrbquote(&ut_grp_desc.)",
             ut_tst_seq      = &ut_tst_seq.,
             ut_tst_id       = strip("&ut_tst_id."),
             ut_tst_type     = strip("&ut_tst_type."),
@@ -263,7 +266,6 @@ Details:        The `build.sas` file in the repo is used to create this file.
     filename log_in;
 %mend ut_search_log;
 
-
 %macro ut_assert_dataset(description=, ds_01=, ds_02=, expected_result=PASS);
 /*
     To be used to assert datasets are identical
@@ -271,7 +273,7 @@ Details:        The `build.sas` file in the repo is used to create this file.
     ds_01:              name of the first dataset
     ds_02:              name of the second dataset
 */
-    %ut_tst_initinit(type=ut_assert_dataset, description=&description., expected_result=&expected_result.);
+    %ut_tst_init(type=ut_assert_dataset, description=&description., expected_result=&expected_result.);
 
     proc compare data=&ds_01. compare=&ds_02. noprint;
     run;
@@ -463,7 +465,7 @@ Details:        The `build.sas` file in the repo is used to create this file.
     filepath:           the expected file full path
     expected_result:    either PASS or FAIL
 */
-    %ut_tst_initinit(type=ut_assert_file, description=&description., expected_result=&expected_result.);
+    %ut_tst_init(type=ut_assert_file, description=&description., expected_result=&expected_result.);
 
     %if %sysfunc(fileexist("&filepath.")) %then %do;
         %let ut_tst_res = PASS;
@@ -480,6 +482,7 @@ Details:        The `build.sas` file in the repo is used to create this file.
 %macro ut_assert_log(description=, log_type=, log_msg=, expected_result=PASS);
 /*
     To be used to assert a log message is expected
+    Note: this function searches for SAS log for a specific message
     description:        description to explain why a message in the log is expected
     log_type:           type of log message (ERROR, WARNING, NOTE...)
     log_msg:            expected text in the log
@@ -497,11 +500,11 @@ Details:        The `build.sas` file in the repo is used to create this file.
     %let ut_tst_det = &ut_tst_det.%nrbquote(&log_msg.)^n;
 
     %if &ut_search_log. = TRUE %then %do;
-        %let ut_tst_res=PASS;
+        %let ut_tst_res = PASS;
         %let ut_tst_det = &ut_tst_det.found in the SAS log;
     %end;
     %else %do;
-        %let ut_tst_res=FAIL;
+        %let ut_tst_res = FAIL;
         %let ut_tst_det = &ut_tst_det.not found in the SAS log;
     %end;
 
@@ -720,9 +723,9 @@ Details:        The `build.sas` file in the repo is used to create this file.
 
         column dummy desc value;
 
-        define dummy        / order noprint;
-        define desc         / display "";
-        define value        / display "";
+        define dummy    / order noprint;
+        define desc     / display "";
+        define value    / display "";
 
         *-- This hack removes TOC entries --*;
         break before dummy / page contents='';
@@ -752,9 +755,9 @@ Details:        The `build.sas` file in the repo is used to create this file.
         define dummy        / order noprint;
         define ut_grp_id    / order noprint;
         define ut_grp_desc  / group noprint;
-        define ut_tst_id        / display "Test ID" style={width=100};
-        define ut_tst_desc      / display "Test description";
-        define ut_tst_stat      / display "Status" style={width=80};
+        define ut_tst_id    / display "Test ID" style={width=100};
+        define ut_tst_desc  / display "Test description";
+        define ut_tst_stat  / display "Status" style={width=80};
 
         *-- This hack removes TOC entries --*;
         break before dummy / page contents='';
@@ -766,7 +769,7 @@ Details:        The `build.sas` file in the repo is used to create this file.
 
         compute ut_tst_stat;
             if strip(lowcase(ut_tst_stat)) = "pass" then    call define(_col_, "style", "style={background=cxa7e8b8}");
-            else                                        call define(_col_, "style", "style={background=cxfab4b4}");
+            else                                            call define(_col_, "style", "style={background=cxfab4b4}");
         endcomp;
     run;
 
@@ -783,11 +786,11 @@ Details:        The `build.sas` file in the repo is used to create this file.
         attrib row_nfo format=$50.;
         attrib row_data format=$500.;
 
-        row_nfo = "Test description";   row_data = strip(ut_tst_desc);      output;
-        row_nfo = "Test type";          row_data = strip(ut_tst_type);      output;
-        row_nfo = "Test details";       row_data = strip(ut_tst_det);       output;
-        row_nfo = "Expected result";    row_data = strip(ut_tst_exp_res);   output;
-        row_nfo = "Result";             row_data = strip(ut_tst_res);       output;
+        row_nfo="Test description"; row_data=strip(ut_tst_desc);    output;
+        row_nfo="Test type";        row_data=strip(ut_tst_type);    output;
+        row_nfo="Test details";     row_data=strip(ut_tst_det);     output;
+        row_nfo="Expected result";  row_data=strip(ut_tst_exp_res); output;
+        row_nfo="Result";           row_data=strip(ut_tst_res);     output;
     run;
 
     proc report data=err_rpt contents="" nowindows missing headline headskip spacing=1 spanrows
@@ -799,9 +802,9 @@ Details:        The `build.sas` file in the repo is used to create this file.
 
         define dummy        / order noprint;
         define ut_grp_id    / order noprint;
-        define ut_tst_seq       / order noprint;
+        define ut_tst_seq   / order noprint;
         define ut_grp_desc  / group noprint;
-        define ut_tst_id        / order "Test ID"  style={verticalalign=middle width=100};
+        define ut_tst_id    / order "Test ID"  style={verticalalign=middle width=100};
         define row_nfo      / display "";
         define row_data     / display "";
 
@@ -825,11 +828,11 @@ Details:        The `build.sas` file in the repo is used to create this file.
         attrib row_nfo format=$50.;
         attrib row_data format=$500.;
 
-        row_nfo = "Test description";   row_data = strip(ut_tst_desc);      output;
-        row_nfo = "Test type";          row_data = strip(ut_tst_type);      output;
-        row_nfo = "Test details";       row_data = strip(ut_tst_det);       output;
-        row_nfo = "Expected result";    row_data = strip(ut_tst_exp_res);   output;
-        row_nfo = "Result";             row_data = strip(ut_tst_res);       output;
+        row_nfo="Test description"; row_data=strip(ut_tst_desc);    output;
+        row_nfo="Test type";        row_data=strip(ut_tst_type);    output;
+        row_nfo="Test details";     row_data=strip(ut_tst_det);     output;
+        row_nfo="Expected result";  row_data=strip(ut_tst_exp_res); output;
+        row_nfo="Result";           row_data=strip(ut_tst_res);     output;
     run;
 
     proc sql noprint;
@@ -864,18 +867,18 @@ Details:        The `build.sas` file in the repo is used to create this file.
 
             define dummy        / order noprint;
             define ut_grp_id    / order noprint;
-            define ut_tst_seq       / order noprint;
-            define ut_tst_id        / order "Test ID"  style={verticalalign=middle width=100};
+            define ut_tst_seq   / order noprint;
+            define ut_tst_id    / order "Test ID"  style={verticalalign=middle width=100};
             define row_nfo      / display "";
             define row_data     / display "";
-            define ut_tst_stat      / order "Status"  style={verticalalign=middle width=80};
+            define ut_tst_stat  / order "Status"  style={verticalalign=middle width=80};
 
             *-- This hack removes TOC entries --*;
             break before dummy / page contents='';
 
             compute ut_tst_stat;
                 if strip(lowcase(ut_tst_stat)) = "pass" then    call define(_col_, "style", "style={background=cxa7e8b8}");
-                else                                        call define(_col_, "style", "style={background=cxfab4b4}");
+                else                                            call define(_col_, "style", "style={background=cxfab4b4}");
             endcomp;
         run;
     %end;
