@@ -90,8 +90,8 @@
 
 *-- The expected dataset --*;
 data expected_dataset (drop = _i_);
-    attrib  ut_grp_id   format=best.    label="Testing group ID"
-            ut_grp_desc format=$200.    label="Testing group description"
+    attrib  ut_grp_id       format=best.    label="Testing group ID"
+            ut_grp_desc     format=$200.    label="Testing group description"
             ut_tst_seq      format=best.    label="Test ordering value"
             ut_tst_id       format=$20.     label="Test ID"
             ut_tst_type     format=$30.     label="Test type"
@@ -172,8 +172,8 @@ run;
 
 *-- Define parameters in macro varialbes to allow testing --*;
 %let prv_ut_tst_seq         = &ut_tst_seq.;
-%let custom_type        = custom_type;
-%let custom_desc        = Testing of "ut_tst_init";
+%let custom_type            = custom_type;
+%let custom_desc            = Testing of "ut_tst_init";
 %let custom_ut_tst_exp_res  = PASS;
 
 %ut_tst_init(type=&custom_type., description=&custom_desc., expected_result=&custom_ut_tst_exp_res.);
@@ -439,7 +439,6 @@ run;
 %ut_run(
     stmt = %nrstr(
         %put ERROR: error message;
-
     )
 );
 
@@ -452,7 +451,6 @@ run;
 %ut_assert_macro(
     description = "ut_assert_error" must increment ut_tst_seq by 1 (test increment),
     stmt        = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 1)
-
 );
 
 
@@ -565,7 +563,6 @@ run;
 %ut_run(
     stmt = %nrstr(
         %put WARNING: warning message;
-
     )
 );
 
@@ -673,7 +670,6 @@ run;
 %ut_assert_nowarning(
     description     = %nrstr("ut_assert_nowarning" must be PASS if no WARNING)
 );
-
 
 
 *-------------------------------------------------------------------------*;
