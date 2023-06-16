@@ -5,16 +5,16 @@
     stmt:               macro statement to evaluate
     expected_result:    either PASS or FAIL
 */
-    %ut_init(type=ut_assert_macro, description=&description., expected_result=&expected_result.);
+    %ut_tst_init(type=ut_assert_macro, description=&description., expected_result=&expected_result.);
 
     *-- Statement provided to check macro varialbe value, so continue testing --*;
     %if %unquote(&stmt.) %then %do;
-        %let ut_res = PASS;
-        %let ut_det = Test %superq(stmt) (evaluated as %unquote(&stmt.)) is valid;
+        %let ut_tst_res = PASS;
+        %let ut_tst_det = Test %superq(stmt) (evaluated as %unquote(&stmt.)) is valid;
     %end;
     %else %do;
-        %let ut_res = FAIL;
-        %let ut_det = Test %superq(stmt) (evaluated as %nrbquote(&stmt.)) is not successful;
+        %let ut_tst_res = FAIL;
+        %let ut_tst_det = Test %superq(stmt) (evaluated as %nrbquote(&stmt.)) is not successful;
     %end;
 
     %ut_log_result;

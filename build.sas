@@ -101,10 +101,10 @@
     data _null_;
         file out_file;
         put "/**************************************************************************************************************************************************";
-        put "Program Name:   &out_file.";
-        put "Purpose:        SAS unit testing framework";
-        put "Date created:   &dt9.";
-        put "Details:        The `build.sas` file in the repo is used to create this file.";
+        put "Program Name   : &out_file.";
+        put "Purpose        : SAS unit testing framework";
+        put "Date created   : &dt9.";
+        put "Details        : The `build.sas` file in the repo is used to create this file.";
         put "***************************************************************************************************************************************************/";
     run;
 
@@ -121,8 +121,8 @@
     *-- ut_grp_init --*;
     %append_data(&project_path./core/ut_grp_init.sas, &project_path./&out_file.);
 
-    *-- ut_init --*;
-    %append_data(&project_path./core/helpers/ut_init.sas, &project_path./&out_file.);
+    *-- ut_tst_init --*;
+    %append_data(&project_path./core/ut_tst_init.sas, &project_path./&out_file.);
 
     *-- ut_run --*;
     %append_data(&project_path./core/helpers/ut_run.sas, &project_path./&out_file.);

@@ -27,16 +27,16 @@
             select      "x" as dummy,
                         ut_grp_id,
                         catx(' - ', ut_grp_id, ut_grp_desc) as ut_grp_desc,
-                        ut_seq,
-                        ut_id,
-                        ut_type,
-                        ut_desc,
-                        ut_exp_res,
-                        ut_res,
-                        ut_stat,
-                        ut_det
+                        ut_tst_seq,
+                        ut_tst_id,
+                        ut_tst_type,
+                        ut_tst_desc,
+                        ut_tst_exp_res,
+                        ut_tst_res,
+                        ut_tst_stat,
+                        ut_tst_det
             from        _ut_results
-            order by    ut_grp_id, ut_seq
+            order by    ut_grp_id, ut_tst_seq
         ;
     quit;
 
@@ -48,7 +48,7 @@
         select      count(*)
         into        :not_pass_cnt trimmed
         from        rpt
-        where       strip(lowcase(ut_stat)) ne "pass"
+        where       strip(lowcase(ut_tst_stat)) ne "pass"
         ;
     quit;
 
@@ -82,12 +82,12 @@
 
         column dummy desc value;
 
-        define dummy        / order noprint;
-        define desc         / display "";
-        define value        / display "";
+        define dummy    / order noprint;
+        define desc     / display "";
+        define value    / display "";
 
         *-- This hack removes TOC entries --*;
-        break before dummy  / page contents='';
+        break before dummy / page contents='';
 
         compute value;
             if strip(lowcase(desc)) = "overall validation status" then do;
@@ -109,26 +109,26 @@
         style (report)={background=white}
         ;
 
-        column dummy ut_grp_id ut_grp_desc ut_id ut_desc ut_stat;
+        column dummy ut_grp_id ut_grp_desc ut_tst_id ut_tst_desc ut_tst_stat;
 
         define dummy        / order noprint;
         define ut_grp_id    / order noprint;
         define ut_grp_desc  / group noprint;
-        define ut_id        / display "Test ID" style={width=100};
-        define ut_desc      / display "Test description";
-        define ut_stat      / display "Status" style={width=80};
+        define ut_tst_id    / display "Test ID" style={width=100};
+        define ut_tst_desc  / display "Test description";
+        define ut_tst_stat  / display "Status" style={width=80};
 
         *-- This hack removes TOC entries --*;
-        break before dummy  / page contents='';
+        break before dummy / page contents='';
 
         *-- Display the group description as a header row --*;
         compute before ut_grp_desc / style={font_size=9pt font_weight=bold background=cxffffff foreground=black vjust=center just=l};
             line ut_grp_desc $500.;
         endcomp;
 
-        compute ut_stat;
-            if strip(lowcase(ut_stat)) = "pass" then    call define(_col_, "style", "style={background=cxa7e8b8}");
-            else                                        call define(_col_, "style", "style={background=cxfab4b4}");
+        compute ut_tst_stat;
+            if strip(lowcase(ut_tst_stat)) = "pass" then    call define(_col_, "style", "style={background=cxa7e8b8}");
+            else                                            call define(_col_, "style", "style={background=cxfab4b4}");
         endcomp;
     run;
 
@@ -139,17 +139,17 @@
 
     ods proclabel 'Failed tests';
 
-    data err_rpt (keep = dummy ut_grp_id ut_seq ut_grp_desc ut_id ut_type row_nfo row_data);
-        set rpt (where = (strip(lowcase(ut_stat)) ne "pass"));
+    data err_rpt (keep = dummy ut_grp_id ut_tst_seq ut_grp_desc ut_tst_id ut_tst_type row_nfo row_data);
+        set rpt (where = (strip(lowcase(ut_tst_stat)) ne "pass"));
 
         attrib row_nfo format=$50.;
         attrib row_data format=$500.;
 
-        row_nfo = "Test description";   row_data = strip(ut_desc);      output;
-        row_nfo = "Test type";          row_data = strip(ut_type);      output;
-        row_nfo = "Test details";       row_data = strip(ut_det);       output;
-        row_nfo = "Expected result";    row_data = strip(ut_exp_res);   output;
-        row_nfo = "Result";             row_data = strip(ut_res);       output;
+        row_nfo="Test description"; row_data=strip(ut_tst_desc);    output;
+        row_nfo="Test type";        row_data=strip(ut_tst_type);    output;
+        row_nfo="Test details";     row_data=strip(ut_tst_det);     output;
+        row_nfo="Expected result";  row_data=strip(ut_tst_exp_res); output;
+        row_nfo="Result";           row_data=strip(ut_tst_res);     output;
     run;
 
     proc report data=err_rpt contents="" nowindows missing headline headskip spacing=1 spanrows
@@ -157,18 +157,18 @@
         style (report)={background=white}
         ;
 
-        column dummy ut_grp_id ut_seq ut_grp_desc ut_id row_nfo row_data;
+        column dummy ut_grp_id ut_tst_seq ut_grp_desc ut_tst_id row_nfo row_data;
 
         define dummy        / order noprint;
         define ut_grp_id    / order noprint;
-        define ut_seq       / order noprint;
+        define ut_tst_seq   / order noprint;
         define ut_grp_desc  / group noprint;
-        define ut_id        / order "Test ID"  style={verticalalign=middle width=100};
+        define ut_tst_id    / order "Test ID"  style={verticalalign=middle width=100};
         define row_nfo      / display "";
         define row_data     / display "";
 
         *-- This hack removes TOC entries --*;
-        break before dummy  / page contents='';
+        break before dummy / page contents='';
 
         *-- Display the group description as a header row --*;
         compute before ut_grp_desc / style={font_size=9pt font_weight=bold background=cxffffff foreground=black vjust=center just=l};
@@ -181,17 +181,17 @@
     *-- Detailed validation reports                 --*;
     *-------------------------------------------------*;
 
-    data full_rpt (keep = dummy ut_grp_id ut_grp_desc ut_seq ut_id ut_type ut_exp_res ut_res ut_stat row_nfo row_data);
+    data full_rpt (keep = dummy ut_grp_id ut_grp_desc ut_tst_seq ut_tst_id ut_tst_type ut_tst_exp_res ut_tst_res ut_tst_stat row_nfo row_data);
         set rpt;
 
         attrib row_nfo format=$50.;
         attrib row_data format=$500.;
 
-        row_nfo = "Test description";   row_data = strip(ut_desc);      output;
-        row_nfo = "Test type";          row_data = strip(ut_type);      output;
-        row_nfo = "Test details";       row_data = strip(ut_det);       output;
-        row_nfo = "Expected result";    row_data = strip(ut_exp_res);   output;
-        row_nfo = "Result";             row_data = strip(ut_res);       output;
+        row_nfo="Test description"; row_data=strip(ut_tst_desc);    output;
+        row_nfo="Test type";        row_data=strip(ut_tst_type);    output;
+        row_nfo="Test details";     row_data=strip(ut_tst_det);     output;
+        row_nfo="Expected result";  row_data=strip(ut_tst_exp_res); output;
+        row_nfo="Result";           row_data=strip(ut_tst_res);     output;
     run;
 
     proc sql noprint;
@@ -222,22 +222,22 @@
             style (report)={background=white}
             ;
 
-            column dummy ut_grp_id ut_seq ut_id row_nfo row_data ut_stat;
+            column dummy ut_grp_id ut_tst_seq ut_tst_id row_nfo row_data ut_tst_stat;
 
             define dummy        / order noprint;
             define ut_grp_id    / order noprint;
-            define ut_seq       / order noprint;
-            define ut_id        / order "Test ID"  style={verticalalign=middle width=100};
+            define ut_tst_seq   / order noprint;
+            define ut_tst_id    / order "Test ID"  style={verticalalign=middle width=100};
             define row_nfo      / display "";
             define row_data     / display "";
-            define ut_stat      / order "Status"  style={verticalalign=middle width=80};
+            define ut_tst_stat  / order "Status"  style={verticalalign=middle width=80};
 
             *-- This hack removes TOC entries --*;
-            break before dummy  / page contents='';
+            break before dummy / page contents='';
 
-            compute ut_stat;
-                if strip(lowcase(ut_stat)) = "pass" then    call define(_col_, "style", "style={background=cxa7e8b8}");
-                else                                        call define(_col_, "style", "style={background=cxfab4b4}");
+            compute ut_tst_stat;
+                if strip(lowcase(ut_tst_stat)) = "pass" then    call define(_col_, "style", "style={background=cxa7e8b8}");
+                else                                            call define(_col_, "style", "style={background=cxfab4b4}");
             endcomp;
         run;
     %end;
