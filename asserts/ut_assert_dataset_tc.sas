@@ -1,21 +1,29 @@
-%macro ut_assert_dataset_tc(ds=, desc_var=, eval_stmt=, det_var=);
+%macro ut_assert_dataset_tc(ds=, desc_var=, eval_stmt=, exp_status_var=, det_var=);
 /*
     To be used to run test cases provided in a dataset
     ds:                 dataset with test cases
     desc_var:           variable name within ds that contains the test description
     eval_stmt:          SAS statement to evaluate if the test is PASS or FAIL
-    det_stmt:           SAS statement to define the value of the test details
+    exp_status_var:     variable name within ds that contains the expected status of the test
+    det_var:            variable name within ds that contains the test details
 */
+    %local lib_name ds_name _tc_count _i_ cnt description status details;
+
     *-- Extract libname and memname of "ds" --*;
-    %let lib_name = %scan(&ds., -2, .);
-    %let ds_name = %scan(&ds., -1, .);
+    %let lib_name   = work;
+    %let ds_name    = &ds.;
+
+    %if %sysfunc(countw(&ds_name., '.')) > 1 %then %do;
+        %let lib_name    = %scan(&ds., 1, '.');
+        %let ds_name     = %scan(&ds., 2, '.');
+    %end;
 
     *-- Count number of test cases present in driver ds --*;
     proc sql noprint;
         select      nobs
         into        :_tc_count trimmed
         from        dictionary.tables
-        where       strip(lowcase(libname)) = strip(lowcase(coalescec("&lib_name.", "work")))
+        where       strip(lowcase(libname)) = strip(lowcase("&lib_name."))
             and     strip(lowcase(memname)) = strip(lowcase("&ds_name."))
         ;
     quit;
@@ -25,24 +33,80 @@
         *-- Extract the test description --*;
         %let description=;
         proc sql noprint;
-            select      description
-            into        :description trimmed
-            from        &ds. (firstobs=&_i_. obs=&_i_.)
+            select      count(*)
+            into        :cnt trimmed
+            from        dictionary.columns
+            where       strip(lowcase(libname)) = strip(lowcase("&lib_name."))
+                and     strip(lowcase(memname)) = strip(lowcase("&ds_name."))
+                and     strip(lowcase(name)) = strip(lowcase("&desc_var."))
             ;
         quit;
 
-        %ut_tst_init(type=ut_assert_dataset_tc, description=&description., expected_result=&expected_result.);
+        %if &cnt = 1 %then %do;
+            proc sql noprint;
+                select      &desc_var.
+                into        :description trimmed
+                from        &ds. (firstobs=&_i_. obs=&_i_.)
+                ;
+            quit;
+        %end;
+
+        *-- Extract the expected test status --*;
+        %let status=PASS;
+
+        proc sql noprint;
+            select      count(*)
+            into        :cnt trimmed
+            from        dictionary.columns
+            where       strip(lowcase(libname)) = strip(lowcase("&lib_name."))
+                and     strip(lowcase(memname)) = strip(lowcase("&ds_name."))
+                and     strip(lowcase(name)) = strip(lowcase("&exp_status_var."))
+            ;
+        quit;
+
+        %if &cnt = 1 %then %do;
+            proc sql noprint;
+                select      upcase(&exp_status_var.)
+                into        :status trimmed
+                from        &ds. (firstobs=&_i_. obs=&_i_.)
+                ;
+            quit;
+        %end;
+
+        %ut_tst_init(type=ut_assert_dataset_tc, description=&description., expected_result=&status.);
+
+        *-- Extract the test details --*;
+        %let details="";
+
+        proc sql noprint;
+            select      count(*)
+            into        :cnt trimmed
+            from        dictionary.columns
+            where       strip(lowcase(libname)) = strip(lowcase("&lib_name."))
+                and     strip(lowcase(memname)) = strip(lowcase("&ds_name."))
+                and     strip(lowcase(name)) = strip(lowcase("&det_var."))
+            ;
+        quit;
+
+        %if &cnt = 1 %then %do;
+            proc sql noprint;
+                select      &det_var.
+                into        :details trimmed
+                from        &ds. (firstobs=&_i_. obs=&_i_.)
+                ;
+            quit;
+        %end;
 
         *-- Evaluate the test case --*;
         data _null_;
             set &ds. (firstobs=&_i_. obs=&_i_.);
 
             if %unquote(&eval_stmt.) then do;
-                call symputx('ut_tst_stat', "PASS");
+                call symputx('ut_tst_res', "PASS");
                 call symputx('ut_tst_det', "Test '&eval_stmt.' valid.^n" || strip(&det_var.));
             end;
             else do;
-                call symputx('ut_tst_stat', "FAIL");
+                call symputx('ut_tst_res', "FAIL");
                 call symputx('ut_tst_det', "Test '&eval_stmt.' is not successful.^n" || strip(&det_var.));
             end;
         run;
