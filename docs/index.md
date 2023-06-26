@@ -41,34 +41,24 @@ Before you can do any work with the framework, you must initialize it. This is d
 %ut_setup;
 ```
 
+This function can be used as well to reset the framework.
+
 ## 3 - Creating a testing group
-Once the framework has been initialized, you can create your first `testing group`. It serves as a **container** for the tests belonging to the validation of a **single** feature. This helps to keep things organized and clear for the reporting.\
-To create a `testing group`, use the `ut_grp_init` function:
+Once the framework has been initialized, you can create your first `testing group`. It serves as a **container** for the tests belonging to the validation of a **single** feature. This helps to keep things organized and clear for the reporting. To create a `testing group`, use the `ut_grp_init` function:
 ```sas
 %ut_grp_init(description);
 ```
 
-The `description` parameter is a short text used by the reporting module to describe the group.
+The `description` is a short text used by the reporting module to describe the group.
 
 ## 4 - Creating a test.
-After a testing group has been created, you can define `tests`. They are composed of 2 actions:
+After a testing group has been created, you can define `tests`. They are composed of 2 steps:
 1) Running some code to test
 2) Evaluating the execution status
 
 ### Running some code to test
 
-Performing a test means running some code to ensure it works as expected. However, some code will probably generates issues (warning or error). For example, a macro function that processes a dataset should have an input parameter to specify the dataset:
-```sas
-%test_macro(dataset=..);
-```
-
-This `test_macro` function should perform the following:
-a. Ensuring the `dataset` parameter is not null, and if not, raise an error message and exit
-b. Ensuring the `dataset` parameter - if not null - targets an existing dataset, and if not, raise an error message and exit
-
-And so, these will be tested.\
-However, how to distinguish expected issues (raised by the tested code) from unexpected issues that must be highlighted and fixed?\
-The framework provides a `ut_run` function to run some code while keeping the main SAS session safe from any issue that could be raised by that tested code:
+Performing a test means running some code to ensure it works as expected. However, some code will probably generates issues (warning or error). To distinguish expected issues (raised by the tested code) from unexpected issues (that must be highlighted and fixed), the framework provides a `ut_run` function to keep the main SAS session safe from any issue that could be raised by the tested code:
 ```sas
 %ut_run(
     stmt = %nrstr(
@@ -84,13 +74,13 @@ The framework provides a `ut_run` function to run some code while keeping the ma
 
 ### Evaluate the execution status
 Once the code to be tested has been run, you can evaluate its execution status by using one ore more *assert* functions.\
-These functions embed everything needed to perform a test and log the result so they can be output by reporting module:
+These functions embed everything needed to perform a test and log the result so they can be output by the reporting module:
 1) Logging of the test to be performed (type of test)
 2) Testing
 3) Evaluation of the test status by comparing the result of the test vs the expected result of the test
 4) Building of test details for the reporting module.
 
-It's also easy to create your own assert functions, just following this pattern:
+It's also easy to create your own assert functions, using this template:
 ```sas
 %macro ut_assert_xxx(description=, ..., expected_result=PASS);
     *-- Call to ut_tst_init is a prerequisite: it initializes the test before logging the result --*;
@@ -102,8 +92,9 @@ It's also easy to create your own assert functions, just following this pattern:
     *-- ut_tst_res is the result of your test. It will be compared to expected_result, if values match, the test is PASS, else the test if FAIL --*;
     %let ut_tst_res = PASS;
 
-    *-- ut_tst_det provides details of the test for the report. It helps to understand what's been done --*;
-    %let ut_tst_det = Test %superq(stmt) (evaluated as %unquote(&stmt.)) is valid;
+    *-- ut_tst_det provides details of the evaluation of ut_tst_res for the report. --*;
+    *-- It helps to understand why the test result is PASS or FAIL --*;
+    %let ut_tst_det = Details about the evaluation of ut_tst_res;
 
     *-- Call to ut_log_result is mandatory: it evaluates to status of the test and log the results in a dataset for the reporting module --*;
     %ut_log_result;
@@ -250,10 +241,10 @@ This function is a little bit different from others asserts.\
 This function allows to provide a series of tests to perform within a dataset.\
 For example, let's say you have a macro function that converts a `text` value (that should represents a date) into a `date` variable.\
 Once you performed "standard" tests (e.g. ensuring mandatory parameters are provided and valid), you probably want to test various `input` values to ensure the function outputs the `expected` values.\
-One strategy consists in::
-a. Create a dataset with the `input` values, use the conversion function to get the `output` values
-b. Create a dataset with the `input` values, and the `expected` values
-c. Call `ut_assert_dataset` to ensure both datasets are identical.
+One strategy consists in:
+1) Create a dataset with the `input` values, use the conversion function to get the `output` values
+2) Create a dataset with the `input` values, and the `expected` values
+3) Call `ut_assert_dataset` to ensure both datasets are identical
 
 Another option proposed by the framework consists in providing only 1 dataset with the `input` values, the `expected` values, the `output` values and the statement to evaluate the testing.
 | Parameter name                | Purpose |
@@ -267,6 +258,9 @@ Another option proposed by the framework consists in providing only 1 dataset wi
 ## 5 - Reporting.
 The last step of the validation plan consists in outputing the reporting document.\
 This is achieved with the `ut_report` function that automatically generates a PDF document that contains:
-1) A summary of the valdiation (who/when/overall status)
-2) The list of tests with their status
-3) The list of tests with their execution details
+1) A summary of the validation (who/when/overall status)\
+    ![](rpt_01.png)
+2) The list of tests with their status\
+    ![](rpt_02.png)
+3) The list of tests with their execution details\
+    ![](rpt_03.png)
