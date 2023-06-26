@@ -15,7 +15,7 @@ This framework is written in pure SAS, thus it is OS independent.
 
 ### docs folder
 
-This folder groups all the documentation of this framework
+This folder groups all the [documentation](./docs/index.md) of this framework
 
 ### core folder
 
@@ -54,7 +54,6 @@ filename utf url "https://raw.githubusercontent.com/Gaadek/sas_unit_testing/main
 - one macro per file
 - `ut_` prefixes for **u**nit **t**esting macro functions
 - follow verb-noun convention
-- unix style line endings (lf)
 - UTF-8
 
 ### Header Properties
