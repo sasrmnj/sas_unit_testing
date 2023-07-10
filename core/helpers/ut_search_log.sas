@@ -28,9 +28,9 @@
     *-- Open the log file --*;
     filename log_in "&log_file.";
 
-    %let buf_size = 50;
+    %let buf_size = %eval(%length(%superq(log_msg)) * 2);
 
-    data _null_;
+    data test;
         infile log_in lrecl=256 length=line_len truncover;
 
         attrib  log_no  format=8.
