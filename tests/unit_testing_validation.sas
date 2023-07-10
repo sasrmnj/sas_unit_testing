@@ -249,6 +249,18 @@ data test_data;
 
     txt="OTHER: a message with a different tag";
     output;
+
+    txt="NOTE: a very long message with words cut in the mid";
+    output;
+
+    txt="dle and leading/trailing spacing characters to ";
+    output;
+
+    txt="ensure the search";
+    output;
+
+    txt=" can be performed against multiple log lines";
+    output;
 run;
 
 %let work = %quote(%sysfunc(pathname(work)));
@@ -275,8 +287,8 @@ run;
 *-- note: use "ut_run" to capture WARNING/ERROR --*;
 %ut_run(
     stmt = %nrstr(
-        %ut_search_log(log_file=&work./popcorn.log, log_type=, log_msg=, res_var=);
-    )
+                %ut_search_log(log_file=&work./popcorn.log, log_type=, log_msg=, res_var=);
+            )
 );
 
 %ut_assert_error(
@@ -287,9 +299,9 @@ run;
 
 *-- TEST: RES_VAR is mandatory --*;
 %ut_run(
-    stmt = %nrstr(
-        %ut_search_log(log_file=&work./sample.log, log_type=, log_msg=, res_var=);
-    )
+    stmt =  %nrstr(
+                %ut_search_log(log_file=&work./sample.log, log_type=, log_msg=, res_var=);
+            )
 );
 
 %ut_assert_error(
@@ -355,11 +367,20 @@ run;
 );
 
 
-*-- TEST: ut_search_log is case insensitive --*;
+*-- TEST: ut_search_log must be case insensitive --*;
 %ut_search_log(log_file=&work./sample.log, log_type=ErrOr, log_msg=MeSsaGe, res_var=res);
 
 %ut_assert_macro(
     description = %nrstr("ut_search_log" is not case sensitive),
+    stmt        = %nrstr(&res. = TRUE)
+);
+
+
+*-- TEST: ut_search_log must be able to search values reported split in the log --*;
+%ut_search_log(log_file=&work./sample.log, log_msg=a very long message with words cut in the middle and leading/trailing spacing characters to ensure the search can be performed against multiple log lines, res_var=res);
+
+%ut_assert_macro(
+    description = %nrstr("ut_search_log" can search values split into multiple log lines),
     stmt        = %nrstr(&res. = TRUE)
 );
 
