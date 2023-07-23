@@ -235,39 +235,28 @@ run;
 
 
 *-- Create a dummy log file --*;
-data test_data;
-    attrib txt format=$256.;
-
-    txt="NOTE: as simple line";
-    output;
-
-    txt="WARNING: a warning message";
-    output;
-
-    txt="ERROR: an error message";
-    output;
-
-    txt="OTHER: a message with a different tag";
-    output;
-
-    txt="NOTE: a very long message with words cut in the mid";
-    output;
-
-    txt="dle and leading/trailing spacing characters to ";
-    output;
-
-    txt="ensure the search";
-    output;
-
-    txt=" can be performed against multiple log lines";
-    output;
-run;
-
 %let work = %quote(%sysfunc(pathname(work)));
 
-proc export data=test_data dbms=csv outfile="&work./sample.log" replace;
-    putnames=no;
+filename fsample "&work./sample.log" lrecl=600;
+
+data _null_;
+    file fsample;
+
+    put "NOTE: as simple line";
+    put ;
+    put "WARNING: a warning message";
+    put ;
+    put "ERROR: an error message";
+    put ;
+    put "OTHER: a message with a different tag";
+    put ;
+    put "NOTE: a very long message with words cut in the mid";
+    put "dle and leading/trailing spacing characters to ";
+    put "ensure the search";
+    put " can be performed accross multiple log lines";
 run;
+
+filename fsample;
 
 
 *-- TEST: LOG_FILE is mandatory --*;
@@ -353,7 +342,7 @@ run;
 %ut_search_log(log_file=&work./sample.log, log_type=WARNING, log_msg=message, res_var=res);
 
 %ut_assert_macro(
-    description = %nrstr("ut_search_log" must return TRUE when LOG_TYPE/LOG_MSG type exists in the log file),
+    description = %nrstr("ut_search_log" must return TRUE when LOG_TYPE/LOG_MSG exists in the log file),
     stmt        = %nrstr(&res. = TRUE)
 );
 
@@ -362,7 +351,7 @@ run;
 %ut_search_log(log_file=&work./sample.log, log_type=WARNING, log_msg=error, res_var=res);
 
 %ut_assert_macro(
-    description = %nrstr("ut_search_log" must return FALSE when LOG_TYPE/LOG_MSG type exists in the log file),
+    description = %nrstr("ut_search_log" must return FALSE when LOG_TYPE/LOG_MSG does not exist in the log file),
     stmt        = %nrstr(&res. = FALSE)
 );
 
@@ -377,7 +366,7 @@ run;
 
 
 *-- TEST: ut_search_log must be able to search values reported split in the log --*;
-%ut_search_log(log_file=&work./sample.log, log_msg=a very long message with words cut in the middle and leading/trailing spacing characters to ensure the search can be performed against multiple log lines, res_var=res);
+%ut_search_log(log_file=&work./sample.log, log_msg=%str(a very long message with words cut in the middle and leading/trailing spacing characters to ensure the search can be performed accross multiple log lines), res_var=res);
 
 %ut_assert_macro(
     description = %nrstr("ut_search_log" can search values split into multiple log lines),
