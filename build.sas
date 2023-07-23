@@ -111,8 +111,7 @@
     filename out_file;
 
     *-------------------------------------------------*;
-    *-- Core & helper scripts                       --*;
-    *-- Order is defined by order of use            --*;
+    *-- Core scripts                                --*;
     *-------------------------------------------------*;
 
     *-- ut_setup --*;
@@ -133,20 +132,46 @@
     *-- ut_search_log --*;
     %append_data(&project_path./core/helpers/ut_search_log.sas, &project_path./&out_file.);
 
-    *-- List assert files --*;
-    %get_folder_content(~/sas_unit_testing/asserts, asserts);
+    *-------------------------------------------------*;
+    *-- Helpers                                     --*;
+    *-------------------------------------------------*;
 
-    %let assert_list=;
+    *-- List files --*;
+    %get_folder_content(~/sas_unit_testing/helpers, helpers);
+
+    %let helpers_list=;
     proc sql noprint;
         select      distinct memname
-        into        :assert_list separated by "|"
+        into        :helpers_list separated by "|"
+        from        helpers
+        ;
+    quit;
+
+    *-- Process all helpers --*;
+    %do i=1 %to %sysfunc(countw(&helpers_list., "|"));
+        %let cur_helper = %scan(&helpers_list., &i., "|");
+
+        %append_data(&project_path./helpers/&cur_helper., &project_path./&out_file.);
+    %end;
+
+    *-------------------------------------------------*;
+    *-- Asserts                                     --*;
+    *-------------------------------------------------*;
+
+    *-- List files --*;
+    %get_folder_content(~/sas_unit_testing/asserts, asserts);
+
+    %let asserts_list=;
+    proc sql noprint;
+        select      distinct memname
+        into        :asserts_list separated by "|"
         from        asserts
         ;
     quit;
 
     *-- Process all asserts --*;
-    %do i=1 %to %sysfunc(countw(&assert_list., "|"));
-        %let cur_assert = %scan(&assert_list., &i., "|");
+    %do i=1 %to %sysfunc(countw(&asserts_list., "|"));
+        %let cur_assert = %scan(&asserts_list., &i., "|");
 
         %append_data(&project_path./asserts/&cur_assert., &project_path./&out_file.);
     %end;
