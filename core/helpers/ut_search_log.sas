@@ -90,8 +90,7 @@
             end;
 
             *-- Process current log line --*;
-            if flag then do;
-
+            if flag and not missing(log_txt) then do;
                 *-- Ensure there is enough space in the buffer to add current log line --*;
                 if buf_len + log_len > &buf_size. then do;
                     buf = substr(buf, (log_len-(&buf_size. - buf_len)) + 1);
