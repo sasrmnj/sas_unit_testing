@@ -261,9 +261,9 @@ filename fsample;
 
 *-- TEST: LOG_FILE is mandatory --*;
 %ut_run(
-    stmt = %nrstr(
-        %ut_search_log(log_file=, log_type=, log_msg=, res_var=);
-    )
+    stmt =  %nrstr(
+                %ut_search_log(log_file=, log_type=, log_msg=, res_var=);
+            )
 );
 
 %ut_assert_error(
@@ -275,7 +275,7 @@ filename fsample;
 *-- TEST: LOG_FILE must be a valid file --*;
 *-- note: use "ut_run" to capture WARNING/ERROR --*;
 %ut_run(
-    stmt = %nrstr(
+    stmt =  %nrstr(
                 %ut_search_log(log_file=&work./popcorn.log, log_type=, log_msg=, res_var=);
             )
 );
@@ -419,9 +419,9 @@ filename fsample;
 
 *-- TEST: "ut_assert_log" must allow to search specific text into a log file  --*;
 %ut_run(
-    stmt = %nrstr(
-        %put some message;
-    )
+    stmt =  %nrstr(
+                %put some message;
+            )
 );
 
 %ut_assert_log(
@@ -447,9 +447,9 @@ filename fsample;
 
 *-- Raise an error so the call to ut_assert_error will not appear as a validation error --*;
 %ut_run(
-    stmt = %nrstr(
-        %put ERROR: error message;
-    )
+    stmt =  %nrstr(
+                %put ERROR: error message;
+            )
 );
 
 %ut_assert_error(
@@ -468,9 +468,9 @@ filename fsample;
 
 *-- Statement that simulates an error --*;
 %ut_run(
-    stmt = %nrstr(
-        %put ERROR: error message;
-    )
+    stmt =  %nrstr(
+                %put ERROR: error message;
+            )
 );
 
 %ut_assert_error(
@@ -493,9 +493,9 @@ filename fsample;
 
 *-- Statement that simulates an errorless situation  --*;
 %ut_run(
-    stmt = %nrstr(
-        %put no error;
-    )
+    stmt =  %nrstr(
+                %put no error;
+            )
 );
 
 %ut_assert_error(
@@ -534,9 +534,9 @@ filename fsample;
 
 *-- Statement that simulates an error  --*;
 %ut_run(
-    stmt = %nrstr(
-        %put ERROR: error message;
-    )
+    stmt =  %nrstr(
+                %put ERROR: error message;
+            )
 );
 
 %ut_assert_noerror(
@@ -549,9 +549,9 @@ filename fsample;
 
 *-- Statement that simulates an errorless situation  --*;
 %ut_run(
-    stmt = %nrstr(
-        %put no error;
-    )
+    stmt =  %nrstr(
+                %put no error;
+            )
 );
 
 %ut_assert_noerror(
@@ -571,9 +571,9 @@ filename fsample;
 
 *-- Raise a warning so the call to ut_assert_warning will not appear as a validation error --*;
 %ut_run(
-    stmt = %nrstr(
-        %put WARNING: warning message;
-    )
+    stmt =  %nrstr(
+                %put WARNING: warning message;
+            )
 );
 
 %ut_assert_warning(
@@ -591,9 +591,9 @@ filename fsample;
 
 *-- Statement that simulates a warning --*;
 %ut_run(
-    stmt = %nrstr(
-        %put WARNING: warning message;
-    )
+    stmt =  %nrstr(
+                %put WARNING: warning message;
+            )
 );
 
 %ut_assert_warning(
@@ -615,9 +615,9 @@ filename fsample;
 
 *-- Statement that simulates no warning --*;
 %ut_run(
-    stmt = %nrstr(
-        %put no warning;
-    )
+    stmt =  %nrstr(
+                %put no warning;
+            )
 );
 
 %ut_assert_warning(
@@ -657,9 +657,9 @@ filename fsample;
 
 *-- Statement that simulates a warning --*;
 %ut_run(
-    stmt = %nrstr(
-        %put WARNING: warning message;
-    )
+    stmt =  %nrstr(
+                %put WARNING: warning message;
+            )
 );
 
 %ut_assert_nowarning(
@@ -672,9 +672,9 @@ filename fsample;
 
 *-- Statement that simulates no warning --*;
 %ut_run(
-    stmt = %nrstr(
-        %put no warning;
-    )
+    stmt =  %nrstr(
+                %put no warning;
+            )
 );
 
 %ut_assert_nowarning(
@@ -707,9 +707,9 @@ filename fsample;
 
 *-- Statement that simulates a warning --*;
 %ut_run(
-    stmt = %nrstr(
-        %put WARNING: warning message;
-    )
+    stmt =  %nrstr(
+                %put WARNING: warning message;
+            )
 );
 
 %ut_assert_noissue(
@@ -722,9 +722,9 @@ filename fsample;
 
 *-- Statement that simulates a error --*;
 %ut_run(
-    stmt = %nrstr(
-        %put ERROR: error message;
-    )
+    stmt =  %nrstr(
+                %put ERROR: error message;
+            )
 );
 
 %ut_assert_noissue(
@@ -737,9 +737,9 @@ filename fsample;
 
 *-- Statement that simulates an issue --*;
 %ut_run(
-    stmt = %nrstr(
-        %let syscc = 99;
-    )
+    stmt =  %nrstr(
+                %let syscc = 99;
+            )
 );
 
 %ut_assert_noissue(
@@ -752,9 +752,9 @@ filename fsample;
 
 *-- Statement that simulates an issue --*;
 %ut_run(
-    stmt = %nrstr(
-        %put no issue;
-    )
+    stmt =  %nrstr(
+                %put no issue;
+            )
 );
 
 %ut_assert_noissue(
