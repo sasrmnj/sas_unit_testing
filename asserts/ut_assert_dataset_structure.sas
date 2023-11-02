@@ -5,6 +5,11 @@
     ds_01:              name of the first dataset
     ds_02:              name of the second dataset
 */
+    *-- Exit if framework state is erroneous --*;
+    %if &ut_err. %then %do;
+        %return;
+    %end;
+
     %ut_tst_init(type=ut_assert_dataset_structure, description=&description., expected_result=&expected_result.);
 
     proc contents data=&ds_01. out=content_01(keep=name type length varnum label format formatl formatd informat informl informd just npos) noprint;

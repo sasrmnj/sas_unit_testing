@@ -7,6 +7,11 @@
     log_msg:    the text tp search for
     res_var:    the variable name to return the result (if "log_msg" has been found, then TRUE else FALSE)
 */
+    *-- Exit if framework state is erroneous --*;
+    %if &ut_err. %then %do;
+        %return;
+    %end;
+
     %if %sysevalf(%superq(log_file) =, boolean) %then %do;
         %put ERROR: LOG_FILE is mandatory when calling ut_search_log;
         %return;

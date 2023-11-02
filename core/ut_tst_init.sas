@@ -1,12 +1,17 @@
 %macro ut_tst_init(type=, description=, expected_result=);
 /*
-    Macro to create and initialize a test "container".
-    This "container" is inserted once the test is complete into the result dataset
+    Macro to create and initialize a test.
+    For that, it defines and initializes some global variables which are used to fill the result dataset.
     This function is used by assert functions and shoudn't be used out of this scope
     type:               type of test
     description:        description of the test
     expected_result:    expected result of the test (either PASS or FAIL)
 */
+    *-- Exit if framework state is erroneous --*;
+    %if &ut_err. %then %do;
+        %return;
+    %end;
+
     *-- Increment test sequence by 1 --*;
     %let ut_tst_seq = %eval(&ut_tst_seq. + 1);
 

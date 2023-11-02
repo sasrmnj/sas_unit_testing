@@ -5,6 +5,11 @@
     ds_01:              name of the first dataset
     ds_02:              name of the second dataset
 */
+    *-- Exit if framework state is erroneous --*;
+    %if &ut_err. %then %do;
+        %return;
+    %end;
+
     %ut_tst_init(type=ut_assert_dataset_content, description=&description., expected_result=&expected_result.);
 
     proc compare data=&ds_01. compare=&ds_02. noprint;

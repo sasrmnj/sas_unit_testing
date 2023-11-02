@@ -7,6 +7,11 @@
     log_msg:            expected text in the log
     expected_result:    either PASS or FAIL
 */
+    *-- Exit if framework state is erroneous --*;
+    %if &ut_err. %then %do;
+        %return;
+    %end;
+
     %ut_tst_init(type=ut_assert_log, description=&description., expected_result=&expected_result.);
 
     *-- Define a macro variable to store the result of ut_search_log --*;

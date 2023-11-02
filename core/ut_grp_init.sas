@@ -5,6 +5,11 @@
     In this case, all the tests can be grouped with a common description
     description:        description of the group of tests
 */
+    *-- Exit if framework state is erroneous --*;
+    %if &ut_err. %then %do;
+        %return;
+    %end;
+
     *-- Increment test group id by 1 --*;
     %let ut_grp_id = %eval(&ut_grp_id. + 1);
 

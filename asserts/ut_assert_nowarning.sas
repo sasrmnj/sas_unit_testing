@@ -4,6 +4,11 @@
     description:        description to explain why a warningis not expected
     expected_result:    either PASS or FAIL
 */
+    *-- Exit if framework state is erroneous --*;
+    %if &ut_err. %then %do;
+        %return;
+    %end;
+
     %ut_tst_init(type=ut_assert_nowarning, description=&description., expected_result=&expected_result.);
 
     %if %sysevalf(%superq(syswarningtext) =, boolean) and &syscc. < 4 %then %do;

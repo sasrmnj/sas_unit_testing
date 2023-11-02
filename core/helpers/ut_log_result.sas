@@ -3,6 +3,11 @@
     Macro to insert the result of a test into the result dataset.
     This function is used by assert functions and shoudn't be used out of this scope
 */
+    *-- Exit if framework state is erroneous --*;
+    %if &ut_err. %then %do;
+        %return;
+    %end;
+
     *-- Define test status --*;
     %if %lowcase(&ut_tst_res.) = %lowcase(&ut_tst_exp_res.) %then   %let ut_tst_stat = PASS;
     %else                                                           %let ut_tst_stat = FAIL;

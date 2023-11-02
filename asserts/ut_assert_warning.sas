@@ -7,6 +7,11 @@
     warning_msg:        warning message expected either in the SAS log or in the system
     expected_result:    either PASS or FAIL
 */
+    *-- Exit if framework state is erroneous --*;
+    %if &ut_err. %then %do;
+        %return;
+    %end;
+
     %ut_tst_init(type=ut_assert_warning, description=&description., expected_result=&expected_result.);
 
     *-- Remove the leading "WARNING:" tag if any --*;
