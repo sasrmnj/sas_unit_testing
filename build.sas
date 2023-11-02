@@ -33,7 +33,7 @@
 
         *-- Calculate row offset (ie. column position of 1st non null char) --*;
         attrib offset format=8.;
-        offset = lengthn(row_data) - lengthn(left(row_data)) + 1;
+        offset = notspace(row_data);
     run;
 
     *-- Define the output file --*;
@@ -90,7 +90,7 @@
 *-- Build the output file                                                       --*;
 *---------------------------------------------------------------------------------*;
 
-%macro build_out_file;
+%macro build_file;
     *-------------------------------------*;
     *-- Header                          --*;
     *-------------------------------------*;
@@ -117,6 +117,9 @@
     *-- ut_setup --*;
     %append_data(&project_path./core/ut_setup.sas, &project_path./&out_file.);
 
+    *-- ut_cov_init --*;
+    %append_data(&project_path./core/ut_cov_init.sas, &project_path./&out_file.);
+
     *-- ut_grp_init --*;
     %append_data(&project_path./core/ut_grp_init.sas, &project_path./&out_file.);
 
@@ -131,28 +134,6 @@
 
     *-- ut_search_log --*;
     %append_data(&project_path./core/helpers/ut_search_log.sas, &project_path./&out_file.);
-
-    *-------------------------------------------------*;
-    *-- Helpers                                     --*;
-    *-------------------------------------------------*;
-
-    *-- List files --*;
-    %get_folder_content(~/sas_unit_testing/helpers, helpers);
-
-    %let helpers_list=;
-    proc sql noprint;
-        select      distinct memname
-        into        :helpers_list separated by "|"
-        from        helpers
-        ;
-    quit;
-
-    *-- Process all helpers --*;
-    %do i=1 %to %sysfunc(countw(&helpers_list., "|"));
-        %let cur_helper = %scan(&helpers_list., &i., "|");
-
-        %append_data(&project_path./helpers/&cur_helper., &project_path./&out_file.);
-    %end;
 
     *-------------------------------------------------*;
     *-- Asserts                                     --*;
@@ -178,6 +159,6 @@
 
     *-- ut_report --*;
     %append_data(&project_path./core/ut_report.sas, &project_path./&out_file.);
-%mend build_out_file;
+%mend build_file;
 
-%build_out_file;
+%build_file;
