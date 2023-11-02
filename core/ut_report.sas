@@ -1,9 +1,15 @@
-%macro ut_report(pgm_name=, report_path=);
+%macro ut_report(report_path=);
 /*
     Macro to generate a PDF report of the tests performed.
-    pgm_name:       name of the SAS program being tested
     report_path:    full path to the PDF file to be created
 */
+    *-- Exit if framework state is erroneous --*;
+    %if &ut_err. %then %do;
+        %return;
+    %end;
+
+    %local yyyymmdd not_pass_cnt code_coverage_pct ut_grp_id_lst ut_grp_desc;
+
     *-- Get the current date in yyyymmdd format --*;
     %let yyyymmdd = %sysfunc(date(), yymmddn8.);
 
@@ -14,12 +20,12 @@
     options orientation=landscape;
     ods escapechar '^';
 
-    ods pdf file="&report_path./unit_testing_&pgm_name._&yyyymmdd..pdf";
+    ods pdf file="&report_path./unit_testing_&ut_macro_name._&yyyymmdd..pdf";
 
     title;
     footnote;
 
-    title1 justify=center height=12pt "&pgm_name. - Validation report";
+    title1 justify=center height=12pt "&ut_macro_name. - Validation report";
     footnote1 justify=right height=10pt "^{thispage} | ^{lastpage}";
 
     proc sql noprint;
@@ -52,10 +58,24 @@
         ;
     quit;
 
+    *-- If code coverage is enabled --*;
+    %if &ut_cov. %then %do;
+        proc sql noprint;
+            select      round(sum(status)/count(*), 0.01)
+            into        :code_coverage_pct
+            from        _ut_cct_state
+            ;
+        quit;
+    %end;
+
     data overall;
         attrib dummy format=$1.;    dummy = "x";
         attrib desc format=$50.;
         attrib value format=$100.;
+
+        desc = "Validation of macro";
+        value = strip("&ut_macro_name.");
+        output;
 
         desc = "Validation report run by";
         value = strip("&sysuserid.");
@@ -65,8 +85,14 @@
         value = strip(put(datetime(), datetime22.));
         output;
 
-        desc = "Overall validation status";
+        *-- If code coverage is enabled --*;
+        %if &ut_cov. %then %do;
+            desc = "Code coverage";
+            value = strip(put(&code_coverage_pct., percent6.2));
+            output;
+        %end;
 
+        desc = "Overall validation status";
         if &not_pass_cnt. = 0 then  value = 'PASS';
         else                        value = 'FAIL';
         output;

@@ -22,14 +22,12 @@
 *-- Load the unit testing framework --*;
 %include "&ut_framework.";
 
-*-- Include the definition of the macro to be validated --*;
-%include "&macro_path.";
 
 *---------------------------------------------------------------------------------------------*;
 *-- Initialize the testing framework                                                        --*;
 *---------------------------------------------------------------------------------------------*;
 
-%ut_setup;
+%ut_setup(in_file=&macro_path.);
 
 *---------------------------------------------------------------------------------------------*;
 *-- testing                                                                                 --*;
@@ -1092,6 +1090,5 @@ run;
 *-------------------------------------------------------------------------*;
 
 %ut_report(
-    pgm_name    = &script_name.,
     report_path = &report_path.
 );

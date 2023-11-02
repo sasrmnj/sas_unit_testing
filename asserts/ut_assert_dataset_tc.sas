@@ -7,6 +7,11 @@
     exp_status_var:     variable name within ds that contains the expected status of the test
     det_var:            variable name within ds that contains the test details
 */
+    *-- Exit if framework state is erroneous --*;
+    %if &ut_err. %then %do;
+        %return;
+    %end;
+
     %local lib_name ds_name _tc_count _i_ cnt description status details;
 
     *-- Extract libname and memname of "ds" --*;

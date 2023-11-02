@@ -5,6 +5,11 @@
     filepath:           the expected file full path
     expected_result:    either PASS or FAIL
 */
+    *-- Exit if framework state is erroneous --*;
+    %if &ut_err. %then %do;
+        %return;
+    %end;
+
     %ut_tst_init(type=ut_assert_file, description=&description., expected_result=&expected_result.);
 
     %if %sysfunc(fileexist("&filepath.")) %then %do;

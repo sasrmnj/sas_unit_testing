@@ -4,6 +4,11 @@
     description:        description to explain why an issue is not expected
     expected_result:    either PASS or FAIL
 */
+    *-- Exit if framework state is erroneous --*;
+    %if &ut_err. %then %do;
+        %return;
+    %end;
+
     %ut_tst_init(type=ut_assert_noissue, description=&description., expected_result=&expected_result.);
 
     %if %sysevalf(%superq(syswarningtext) =, boolean) and %sysevalf(%superq(syserrortext) =, boolean) and &syscc. = 0 %then %do;

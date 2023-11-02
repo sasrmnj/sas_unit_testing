@@ -5,6 +5,11 @@
     stmt:               macro statement to evaluate
     expected_result:    either PASS or FAIL
 */
+    *-- Exit if framework state is erroneous --*;
+    %if &ut_err. %then %do;
+        %return;
+    %end;
+
     %ut_tst_init(type=ut_assert_macro, description=&description., expected_result=&expected_result.);
 
     *-- Statement provided to check macro varialbe value, so continue testing --*;
