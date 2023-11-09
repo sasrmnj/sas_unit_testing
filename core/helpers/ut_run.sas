@@ -57,12 +57,14 @@
 
             filename i_file clear;
 
+            proc sort data=cct nodupkey; by cct_id; run;
+
             *-- Save code coverage trackers found during that run --*;
             proc sql noprint undo_policy=none;
                 create table _ut_cct_state as
                     select      c.cct_id,
                                 c.row_no,
-                                c.txt,
+                                c.raw_txt,
                                 coalesce(c.status, t.status) as status
 
                     from        _ut_cct_state c
@@ -75,7 +77,7 @@
             quit;
 
             proc datasets library=work nolist;
-                delete  cct;
+                delete cct;
             run; quit;
         %end;
     %end;
