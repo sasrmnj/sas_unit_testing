@@ -1,24 +1,48 @@
-%macro ut_cov_init;
+%macro ut_cov_init(in_file, out_file);
 /*
     Macro to initialize code coverage.
     It processes the source code of the macro to be tested, identifies execution branches and adds trackers.
     Each call to the tested macro triggers (or not) trackers so we can identify executed branches.
     Eventually, we can count how many trackers have been triggered to estimate the code coverage
+    in_file:    path to the file with macro code to update for code coverage feature
+    out_file:   name of a macro variable into which path to the file with code coverage implemented will be provided.
 */
-
     *-- Exit if framework state is erroneous --*;
     %if &ut_state. %then %do;
         %return;
     %end;
 
-    *-- Update code coverage flag --*;
+    %if %sysevalf(%superq(in_file) =, boolean) %then %do;
+        %put ERROR: IN_FILE is mandatory when calling ut_cov_init;
+        %let ut_state = 1;
+        %return;
+    %end;
+
+    %if not %sysfunc(fileexist(%nrbquote(&in_file.))) %then %do;
+        %put ERROR: IN_FILE does not target an existing file when calling ut_cov_init;
+        %let ut_state = 1;
+        %return;
+    %end;
+
+    %if %sysevalf(%superq(out_file) =, boolean) %then %do;
+        %put ERROR: OUT_FILE is mandatory when calling ut_cov_init;
+        %let ut_state = 1;
+        %return;
+    %end;
+
+    *-- Update code coverage setting (1: enabled) --*;
     %let ut_cov = 1;
+
+    *-- Extract the name of the macro from file name --*;
+    %local macro_name;
+
+    %let macro_name = %sysfunc(prxchange(s/.*\/(.+\..+)$/$1/oi, -1, %nrbquote(&in_file.)));
 
     *-------------------------------------------------------------*;
     *-- Read the input file                                     --*;
     *-------------------------------------------------------------*;
 
-    filename i_file "&ut_macro_path.";
+    filename i_file "&in_file.";
 
     data raw_code;
         infile i_file length=line_len truncover;
@@ -26,23 +50,24 @@
         attrib  row_no  format=8.
                 txt_len format=8.
                 txt_off format=8.
+                raw_txt format=$2000.
                 txt     format=$2000.
         ;
 
         *-- Read the input file --*;
-        input txt $char2000.;
+        input raw_txt $char2000.;
 
         *-- Define the row number in the raw input file --*;
         row_no  = _n_;
 
         *-- Define the offset (indentation) of the row --*;
-        txt_off = notspace(txt);
+        txt_off = notspace(raw_txt);
 
         *-- Remove leading/trailing spacing chars --*;
-        txt = strip(txt);
+        txt = strip(raw_txt);
 
         *-- Define the length of the row --*;
-        txt_len = length(txt);
+        txt_len = length(raw_txt);
     run;
 
     filename i_file clear;
@@ -229,9 +254,9 @@
         attrib stmt_typ format=$10.;
         retain stmt_typ;
 
-        if prxmatch('/^\s*data\s/oi', txt) then 	        stmt_typ = 'data';
+        if prxmatch('/^\s*data\s/oi', txt) then             stmt_typ = 'data';
         else if prxmatch('/^\s*proc fcmp\s/oi', txt) then   stmt_typ = 'fcmp';
-        else if prxmatch('/^\s*proc\s/oi', txt) then    	stmt_typ = 'proc';
+        else if prxmatch('/^\s*proc\s/oi', txt) then        stmt_typ = 'proc';
 
         output;
 
@@ -265,6 +290,86 @@
 
         if not missing(txt) then do;
             if not _flag then do;
+                *-- Search for "%then" keywords --*;
+                _idx = findvalidtext(txt, '%then');
+
+                if _idx then do;
+                    *-- Store the text after the keyword --*;
+                    _buf = substr(txt, _idx);
+
+                    *-- Set a flag so we know we are processing something --*;
+                    _flag = 1;
+
+                    *-- Store keyword type (m: macro, s: sas) --*;
+                    _type = 'm';
+
+                    *-- Save position where '%do' must be inserted --*;
+                    _start_row = row_no;
+                    _start_idx = _idx + 5;
+                end;
+            end;
+
+            if not _flag then do;
+                *-- Search for "%else" keywords --*;
+                _idx = findvalidtext(txt, '%else');
+
+                if _idx then do;
+                    *-- Store the text after the keyword --*;
+                    _buf = substr(txt, _idx);
+
+                    *-- Set a flag so we know we are processing something --*;
+                    _flag = 1;
+
+                    *-- Store keyword type (m: macro, s: sas) --*;
+                    _type = 'm';
+
+                    *-- Save position where '%do' must be inserted --*;
+                    _start_row = row_no;
+                    _start_idx = _idx + 5;
+                end;
+            end;
+
+            if not _flag then do;
+                *-- Search for "then" keywords --*;
+                _idx = findvalidtext(txt, 'then');
+
+                if _idx and stmt_typ not in ('proc', 'fcmp') then do;
+                    *-- Store the text after the keyword --*;
+                    _buf = substr(txt, _idx);
+
+                    *-- Set a flag so we know we are processing something --*;
+                    _flag = 1;
+
+                    *-- Store keyword type (m: macro, s: sas) --*;
+                    _type = 's';
+
+                    *-- Save position where '%do' must be inserted --*;
+                    _start_row = row_no;
+                    _start_idx = _idx + 4;
+                end;
+            end;
+
+            if not _flag then do;
+                *-- Search for "else" keywords --*;
+                _idx = findvalidtext(txt, 'else');
+
+                if _idx and stmt_typ not in ('proc', 'fcmp') then do;
+                    *-- Store the text after the keyword --*;
+                    _buf = substr(txt, _idx);
+
+                    *-- Set a flag so we know we are processing something --*;
+                    _flag = 1;
+
+                    *-- Store keyword type (m: macro, s: sas) --*;
+                    _type = 's';
+
+                    *-- Save position where '%do' must be inserted --*;
+                    _start_row = row_no;
+                    _start_idx = _idx + 4;
+                end;
+            end;
+
+/*
                 *-- Search for then/else keywords --*;
                 _idx = prxmatch('/(^|\s|%)(then|else)(\s|$)/oi', txt);
 
@@ -289,6 +394,7 @@
                     end;
                 end;
             end;
+*/
 
             if _flag then do;
                 *--
@@ -500,12 +606,14 @@
     *-- Output modified file with code coverage trackers        --*;
     *-------------------------------------------------------------*;
 
-    filename o_file "&ut_work_dir./&ut_cov_file." lrecl=32000;
+    filename o_file "&ut_work_dir./&macro_name." lrecl=32000;
 
     data _null_;
         set macro_code;
 
         file o_file;
+
+        txt = coalescec(txt, raw_txt);
 
         if (lengthn(txt) > 0) then
             put @txt_off txt;
@@ -523,7 +631,7 @@
     proc sort data=macro_code; by cct_id row_no; run;
 
     data _ut_cct_state;
-        set macro_code (keep = cct_id row_no txt);
+        set macro_code (keep = cct_id row_no raw_txt);
         by cct_id row_no;
 
         attrib status format=8.;
@@ -534,10 +642,9 @@
 
 
     *-------------------------------------------------------------*;
-    *-- Load the modified macro with cct embedded               --*;
+    *-- Return the path to the modified macro with cct embedded --*;
     *-------------------------------------------------------------*;
-
-    %include "&ut_work_dir./&ut_cov_file.";
+    %let &out_file. = &ut_work_dir./&macro_name.;
 
 
     *-------------------------------------------------------------*;
@@ -545,6 +652,6 @@
     *-------------------------------------------------------------*;
 
     proc datasets library=work nolist;
-        delete  raw_code macro_code ins cct_ins;
+        delete raw_code macro_code ins cct_ins;
     run; quit;
 %mend ut_cov_init;
