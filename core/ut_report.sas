@@ -4,7 +4,7 @@
     report_path:    full path to the PDF file to be created
 */
     *-- Exit if framework state is erroneous --*;
-    %if &ut_err. %then %do;
+    %if &ut_state. %then %do;
         %return;
     %end;
 

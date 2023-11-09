@@ -7,7 +7,7 @@
 */
 
     *-- Exit if framework state is erroneous --*;
-    %if &ut_err. %then %do;
+    %if &ut_state. %then %do;
         %return;
     %end;
 

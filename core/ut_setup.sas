@@ -1,40 +1,17 @@
-%macro ut_setup(in_file=, in_name=);
+%macro ut_setup;
 /*
     Macro to set up the unit testing environment.
     To be run first and once.
-    in_file:        path to the SAS program being tested
 */
-    %global ut_err
-            ut_macro_path ut_macro_name
+    %global ut_state
             ut_grp_id ut_grp_desc
             ut_tst_seq ut_tst_id ut_tst_type ut_tst_desc ut_tst_exp_res ut_tst_res ut_tst_det
             ut_work_dir ut_log_file
-            ut_cov ut_cov_file
+            ut_cov
     ;
 
-    *-- Set framework status before testing input parameters --*;
-    *-- Like this, if we exit for any reason, status will be erroneous --*;
-    %let ut_err = 1;
-
-    %if %sysevalf(%superq(in_file) =, boolean) %then %do;
-        %put ERROR: IN_FILE is missing;
-        %return;
-    %end;
-
-    %if not %sysfunc(fileexist("&in_file.")) %then %do;
-        %put ERROR: IN_FILE does not exist;
-        %return;
-    %end;
-
-    *-- Input parameters check completed, update framework erroneous state --*;
-    %let ut_err = 0;
-
-    *-- Store the path to the macro to be tested. Needed if ut_cov_init is invoked --*;
-    %let ut_macro_path = %nrbquote(&in_file.);
-
-    *-- Extract the name of the macro (either given or from file name) --*;
-    %if %sysevalf(%superq(in_name) ne, boolean) %then   %let ut_macro_name = %nrbquote(&in_name.);
-    %else                                               %let ut_macro_name = %sysfunc(prxchange(s/.*\/(.+)\..+$/$1/oi, -1, %nrbquote(&in_file.)));
+    *-- Set framework state --*;
+    %let ut_state = 0;
 
     *--
         Unique identifier of a group of tests.

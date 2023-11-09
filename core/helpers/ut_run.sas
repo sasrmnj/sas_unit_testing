@@ -6,7 +6,7 @@
     debug:  any non null value enables the debug mode and so disable the SAS log redirection
 */
     *-- Exit if framework state is erroneous --*;
-    %if &ut_err. %then %do;
+    %if &ut_state. %then %do;
         %return;
     %end;
 

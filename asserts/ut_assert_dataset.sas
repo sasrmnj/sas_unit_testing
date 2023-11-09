@@ -6,7 +6,7 @@
     ds_02:              name of the second dataset
 */
     *-- Exit if framework state is erroneous --*;
-    %if &ut_err. %then %do;
+    %if &ut_state. %then %do;
         %return;
     %end;
 
