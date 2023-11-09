@@ -12,10 +12,10 @@
 %let github_repo    = https://api.github.com/repos/Gaadek/sas_unit_testing;
 
 *-- Github token to upload file --*;
-%let github_token	= ;
+%let github_token   = ;
 
 *-- commit message --*;
-%let commit_message	= Automated unit_testing.sas build upload;
+%let commit_message = Automated unit_testing.sas build upload;
 
 *-- Working directory path --*;
 %let _work_dir      = %quote(%sysfunc(pathname(work)));
@@ -93,10 +93,10 @@
     run;
 
     proc sql noprint;
-        select		distinct memname
-        into		:mem_lst separated by '~'
-        from		zip_content
-        where		is_folder = 0
+        select      distinct memname
+        into        :mem_lst separated by '~'
+        from        zip_content
+        where       is_folder = 0
         ;
     quit;
 
@@ -235,7 +235,7 @@
         *-------------------------------------*;
 
         *-- Define the output file --*;
-        filename out_file "&_out_dir./&_out_file." lrecl=2000;
+        filename out_file "&_work_dir./&_out_file." lrecl=2000;
 
         data _null_;
             file out_file;
@@ -254,28 +254,28 @@
         *-------------------------------------------------*;
 
         *-- ut_fcmp --*;
-        %append_data(&root_path./core/helpers/ut_fcmp.sas, &_out_dir./&_out_file.);
+        %append_data(&root_path./core/helpers/ut_fcmp.sas, &_work_dir./&_out_file.);
 
         *-- ut_setup --*;
-        %append_data(&root_path./core/ut_setup.sas, &_out_dir./&_out_file.);
+        %append_data(&root_path./core/ut_setup.sas, &_work_dir./&_out_file.);
 
         *-- ut_cov_init --*;
-        %append_data(&root_path./core/ut_cov_init.sas, &_out_dir./&_out_file.);
+        %append_data(&root_path./core/ut_cov_init.sas, &_work_dir./&_out_file.);
 
         *-- ut_grp_init --*;
-        %append_data(&root_path./core/ut_grp_init.sas, &_out_dir./&_out_file.);
+        %append_data(&root_path./core/ut_grp_init.sas, &_work_dir./&_out_file.);
 
         *-- ut_tst_init --*;
-        %append_data(&root_path./core/ut_tst_init.sas, &_out_dir./&_out_file.);
+        %append_data(&root_path./core/ut_tst_init.sas, &_work_dir./&_out_file.);
 
         *-- ut_run --*;
-        %append_data(&root_path./core/helpers/ut_run.sas, &_out_dir./&_out_file.);
+        %append_data(&root_path./core/helpers/ut_run.sas, &_work_dir./&_out_file.);
 
         *-- ut_log_result --*;
-        %append_data(&root_path./core/helpers/ut_log_result.sas, &_out_dir./&_out_file.);
+        %append_data(&root_path./core/helpers/ut_log_result.sas, &_work_dir./&_out_file.);
 
         *-- ut_search_log --*;
-        %append_data(&root_path./core/helpers/ut_search_log.sas, &_out_dir./&_out_file.);
+        %append_data(&root_path./core/helpers/ut_search_log.sas, &_work_dir./&_out_file.);
 
 
         *-------------------------------------------------*;
@@ -297,7 +297,7 @@
         %do i=1 %to %sysfunc(countw(&asserts_list., "|"));
             %let cur_assert = %scan(&asserts_list., &i., "|");
 
-            %append_data(&root_path./asserts/&cur_assert., &_out_dir./&_out_file.);
+            %append_data(&root_path./asserts/&cur_assert., &_work_dir./&_out_file.);
         %end;
 
         *-------------------------------------------------*;
@@ -305,7 +305,7 @@
         *-------------------------------------------------*;
 
         *-- ut_report --*;
-        %append_data(&root_path./core/ut_report.sas, &_out_dir./&_out_file.);
+        %append_data(&root_path./core/ut_report.sas, &_work_dir./&_out_file.);
     %mend build_file;
 
     %build_file;
@@ -321,14 +321,14 @@
     %end;
 
     *-- Build the data for the github API (jSON + content in base64) --*;
-    filename ifile "&_out_dir./&_out_file.";
-    filename ofile "&_out_dir./data.txt";
+    filename ifile "&_work_dir./&_out_file.";
+    filename ofile "&_work_dir./data.txt";
 
     data _null_;
         length ifileid 8 ofileid 8 fdata $3 b64 $80;
 
         *---------------------------------------------*;
-        *-- Write json file + commit message		--*;
+        *-- Write json file + commit message        --*;
         *---------------------------------------------*;
 
         *-- Define data to write in the file --*;
@@ -341,7 +341,7 @@
         rc = fclose(ofileid);
 
         *---------------------------------------------*;
-        *-- Write file to upload as base64 content	--*;
+        *-- Write file to upload as base64 content  --*;
         *---------------------------------------------*;
 
         *-- Create handles for input and output files --*;
@@ -354,8 +354,8 @@
             rc = fget(ifileid, fdata, 3);
 
             *-- Convert to base64 (3 bytes are converted to 4 bytes) --*;
-            if fcol(ifileid) = 4 then 	b64 = put(fdata, $base64x64.);
-            else 						b64 = put(trim(fdata), $base64x64.);
+            if fcol(ifileid) = 4 then   b64 = put(fdata, $base64x64.);
+            else                        b64 = put(trim(fdata), $base64x64.);
 
             *-- Write converted data to the output file --*;
             rc = fput(ofileid, b64);
@@ -366,7 +366,7 @@
         rc = fclose(ofileid);
 
         *---------------------------------------------*;
-        *-- Ends json file 							--*;
+        *-- Ends json file                          --*;
         *---------------------------------------------*;
 
         attrib txt format=$2000.;
@@ -382,18 +382,18 @@
     filename ofile clear;
 
     *-- Invoke the github API to upload the file --*;
-    filename data "&_out_dir./data.txt";
+    filename data "&_work_dir./data.txt";
     filename resp temp;
 
     proc http
-        method	= "put"
-        url		= "&github_repo./contents/&_out_file."
-        in		= data
-        out		= resp
+        method  = "put"
+        url     = "&github_repo./contents/&_out_file."
+        in      = data
+        out     = resp
     ;
         headers
-            "Accept"		= "application/vnd.github+json"
-            "Authorization"	= "Bearer &github_token."
+            "Accept"        = "application/vnd.github+json"
+            "Authorization" = "Bearer &github_token."
         ;
     run;
 
