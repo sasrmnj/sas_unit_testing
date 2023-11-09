@@ -8,7 +8,7 @@
     res_var:    the variable name to return the result (if "log_msg" has been found, then TRUE else FALSE)
 */
     *-- Exit if framework state is erroneous --*;
-    %if &ut_err. %then %do;
+    %if &ut_state. %then %do;
         %return;
     %end;
 

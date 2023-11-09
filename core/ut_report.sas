@@ -1,14 +1,15 @@
-%macro ut_report(report_path=);
+%macro ut_report(macro_name=, report_path=);
 /*
     Macro to generate a PDF report of the tests performed.
+    macro_name:     name of the validated macro function
     report_path:    full path to the PDF file to be created
 */
     *-- Exit if framework state is erroneous --*;
-    %if &ut_err. %then %do;
+    %if &ut_state. %then %do;
         %return;
     %end;
 
-    %local yyyymmdd not_pass_cnt code_coverage_pct ut_grp_id_lst ut_grp_desc;
+    %local yyyymmdd not_pass_cnt code_coverage code_coverage_pct ut_grp_id_lst ut_grp_desc;
 
     *-- Get the current date in yyyymmdd format --*;
     %let yyyymmdd = %sysfunc(date(), yymmddn8.);
@@ -20,12 +21,12 @@
     options orientation=landscape;
     ods escapechar '^';
 
-    ods pdf file="&report_path./unit_testing_&ut_macro_name._&yyyymmdd..pdf";
+    ods pdf file="&report_path./unit_testing_&macro_name._&yyyymmdd..pdf";
 
     title;
     footnote;
 
-    title1 justify=center height=12pt "&ut_macro_name. - Validation report";
+    title1 justify=center height=12pt "&macro_name. - Validation report";
     footnote1 justify=right height=10pt "^{thispage} | ^{lastpage}";
 
     proc sql noprint;
@@ -74,7 +75,7 @@
         attrib value format=$100.;
 
         desc = "Validation of macro";
-        value = strip("&ut_macro_name.");
+        value = strip("&macro_name.");
         output;
 
         desc = "Validation report run by";
@@ -264,6 +265,42 @@
             compute ut_tst_stat;
                 if strip(lowcase(ut_tst_stat)) = "pass" then    call define(_col_, "style", "style={background=cxa7e8b8}");
                 else                                            call define(_col_, "style", "style={background=cxfab4b4}");
+            endcomp;
+        run;
+    %end;
+
+    *-------------------------------------------------*;
+    *-- Code coverage report                        --*;
+    *-------------------------------------------------*;
+
+    *-- If code coverage is enabled --*;
+    %if &ut_cov. %then %do;
+        ods proclabel 'Code coverage report';
+
+        data cc_rpt;
+            attrib dummy format=$1.;    dummy = "x";
+
+            set _ut_cct_state;
+        run;
+
+        proc report data=cc_rpt contents="" nowindows missing headline headskip spacing=1 spanrows
+            style (header)=[font_size=9pt font_weight=bold background=cxffffff foreground=black vjust=center just=l]
+            style (report)={background=white}
+            ;
+
+            column dummy status row_no raw_txt;
+
+            define dummy        / order noprint;
+            define status       / noprint "";
+            define row_no       / order "Row#"  style={verticalalign=middle width=100};
+            define raw_txt      / display "SAS statement";
+
+            *-- This hack removes TOC entries --*;
+            break before dummy / page contents='';
+
+            compute raw_txt;
+                if not missing(status) then call define(_col_, "style", "style={background=cxa7e8b8}");
+                else                        call define(_col_, "style", "style={background=cxfab4b4}");
             endcomp;
         run;
     %end;

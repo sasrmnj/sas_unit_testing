@@ -4,7 +4,7 @@
     This function is used by assert functions and shoudn't be used out of this scope
 */
     *-- Exit if framework state is erroneous --*;
-    %if &ut_err. %then %do;
+    %if &ut_state. %then %do;
         %return;
     %end;
 
