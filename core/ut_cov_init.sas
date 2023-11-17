@@ -44,14 +44,14 @@
 
     filename i_file "&in_file.";
 
-    data raw_code;
+    data _ut_code;
         infile i_file length=line_len truncover;
 
         attrib  row_no  format=8.
-                txt_len format=8.
-                txt_off format=8.
                 raw_txt format=$2000.
                 txt     format=$2000.
+                txt_len format=8.
+                txt_off format=8.
         ;
 
         *-- Read the input file --*;
@@ -67,7 +67,7 @@
         txt = strip(raw_txt);
 
         *-- Define the length of the row --*;
-        txt_len = length(raw_txt);
+        txt_len = length(txt);
     run;
 
     filename i_file clear;
@@ -78,7 +78,7 @@
     *-------------------------------------------------------------*;
 
     data macro_code (drop = _:);
-        set raw_code end=eof;
+        set _ut_code end=eof;
 
         attrib  _flag   format=8.
                 _idx    format=8.
@@ -631,7 +631,7 @@
     proc sort data=macro_code; by cct_id row_no; run;
 
     data _ut_cct_state;
-        set macro_code (keep = cct_id row_no raw_txt);
+        set macro_code (keep = cct_id row_no);
         by cct_id row_no;
 
         attrib status format=8.;
@@ -652,6 +652,6 @@
     *-------------------------------------------------------------*;
 
     proc datasets library=work nolist;
-        delete raw_code macro_code ins cct_ins;
+        delete ins cct_ins;
     run; quit;
 %mend ut_cov_init;

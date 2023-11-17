@@ -22,7 +22,7 @@
         *-- http://support.sas.com/kb/35/553.html --*;
         %if %sysevalf(%superq(error_msg) ne, boolean) %then %do;
             *-- If expected error message is provided, then SAS error message must match --*;
-            %if %nrbquote(&syserrortext.) = %nrbquote(&error_msg.) %then %do;
+            %if %sysfunc(find(%nrbquote(&syserrortext.), %nrbquote(&error_msg.), i)) %then %do;
                 %let ut_tst_res = PASS;
                 %let ut_tst_det = Expected error is:^n%nrbquote(&error_msg.)^n^nError reported by SAS is:^n%nrbquote(&syserrortext.);
             %end;

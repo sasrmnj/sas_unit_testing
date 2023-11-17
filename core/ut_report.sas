@@ -62,8 +62,8 @@
     *-- If code coverage is enabled --*;
     %if &ut_cov. %then %do;
         proc sql noprint;
-            select      round(sum(status)/count(*), 0.01)
-            into        :code_coverage_pct
+            select      round(coalesce(sum(status), 0)/count(*), 0.01)
+            into        :code_coverage_pct trimmed
             from        _ut_cct_state
             ;
         quit;
@@ -277,33 +277,81 @@
     %if &ut_cov. %then %do;
         ods proclabel 'Code coverage report';
 
-        data cc_rpt;
-            attrib dummy format=$1.;    dummy = "x";
+        *-- Retrieve 2 lines of code before and after the tested line of code --*;
+        proc sql noprint;
+            create table cct_rpt as
+                select      'x' as dummy,
+                            c.row_no,
+                            c.raw_txt,
+                            s.row_no as cct_row,
+                            s.cct_id,
+                            s.status
 
-            set _ut_cct_state;
+                from        _ut_code c
+
+                left join   _ut_cct_state s
+                on          c.row_no between s.row_no - 2 and s.row_no + 2
+
+                where       not missing(cct_id)
+
+                order by    s.cct_id, c.row_no
+            ;
+        quit;
+
+        data cct_rpt;
+            set cct_rpt;
+            by cct_id row_no;
+
+            attrib txt format=$5000.;
+            retain txt;
+
+            attrib tmp format=$1000.;
+
+            if first.cct_id and row_no > 1 then txt = repeat(' ', 8) || '...';
+
+            attrib row_no_str format=$10.;
+            row_no_str = strip(put(row_no, 8.)) || '.';
+
+            if row_no = cct_row then do;
+                if missing(status) then tmp = "^{style[foreground=cxC0504D]";       /* fab4b4: too light */
+                else                    tmp = "^{style[foreground=cx00b050]";       /* a7e8b8: too ligh t*/
+
+                tmp = strip(tmp) || strip(raw_txt) || "}";
+            end;
+            else do;
+                tmp = strip(raw_txt);
+            end;
+
+            txt = strip(txt) || '^n' || strip(row_no_str) ||  repeat(' ', 8 - lengthn(row_no_str)) || strip(tmp);
+
+            if last.cct_id then do;
+                txt = strip(txt) || '^n' || repeat(' ', 8) || '...';
+                output;
+            end;
         run;
 
-        proc report data=cc_rpt contents="" nowindows missing headline headskip spacing=1 spanrows
+        proc report data=cct_rpt contents="" nowindows missing headline headskip spacing=1 spanrows
             style (header)=[font_size=9pt font_weight=bold background=cxffffff foreground=black vjust=center just=l]
             style (report)={background=white}
             ;
 
-            column dummy status row_no raw_txt;
+            column dummy txt;
 
             define dummy        / order noprint;
-            define status       / noprint "";
-            define row_no       / order "Row#"  style={verticalalign=middle width=100};
-            define raw_txt      / display "SAS statement";
+            define txt          / display "SAS statement" style(column)={font_face=courier};
 
             *-- This hack removes TOC entries --*;
             break before dummy / page contents='';
-
-            compute raw_txt;
-                if not missing(status) then call define(_col_, "style", "style={background=cxa7e8b8}");
-                else                        call define(_col_, "style", "style={background=cxfab4b4}");
-            endcomp;
         run;
     %end;
 
     ods pdf close;
+
+    proc datasets library=work nolist;
+        delete  rpt overall err_rpt full_rpt
+                %if &ut_cov. %then %do;
+                    cct_rpt
+                %end;
+        ;
+    run; quit;
 %mend ut_report;
