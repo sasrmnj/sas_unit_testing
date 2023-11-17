@@ -49,7 +49,7 @@
                 *-- Identify code coverage trackers --*;
                 if prxmatch('/#cct#\d+#/oi', _infile_) then do;
                     attrib cct_id status format=8.;
-                    cct_id = input(prxchange('s/#cct#(\d)+#/$1/oi', -1, _infile_), best.);
+                    cct_id = input(prxchange('s/#cct#(\d+)#/$1/oi', -1, _infile_), best.);
                     status = 1;
                     output;
                 end;
@@ -64,7 +64,6 @@
                 create table _ut_cct_state as
                     select      c.cct_id,
                                 c.row_no,
-                                c.raw_txt,
                                 coalesce(c.status, t.status) as status
 
                     from        _ut_cct_state c

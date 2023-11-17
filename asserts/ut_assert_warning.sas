@@ -22,7 +22,7 @@
         *-- http://support.sas.com/kb/35/553.html --*;
         %if %sysevalf(%superq(warning_msg) ne, boolean) %then %do;
             *-- If expected warning message is provided, then SAS warning message must match --*;
-            %if %nrbquote(&syswarningtext.) = %nrbquote(&warning_msg.) %then %do;
+            %if %sysfunc(find(%nrbquote(&syswarningtext.), %nrbquote(&warning_msg.), i)) %then %do;
                 %let ut_tst_res = PASS;
                 %let ut_tst_det = Expected warning is:^n%nrbquote(&warning_msg.)^n^nWarning reported by SAS is:^n%nrbquote(&syswarningtext.);
             %end;
