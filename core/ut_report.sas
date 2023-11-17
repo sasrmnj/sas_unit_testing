@@ -277,7 +277,7 @@
     %if &ut_cov. %then %do;
         ods proclabel 'Code coverage report';
 
-        *-- Retrieve 2 lines of code before and after the tested line of code --*;
+        *-- Retrieve 2 lines before/after the tested line of code --*;
         proc sql noprint;
             create table cct_rpt as
                 select      'x' as dummy,
@@ -312,9 +312,10 @@
             attrib row_no_str format=$10.;
             row_no_str = strip(put(row_no, 8.)) || '.';
 
+            *-- Highlight tested code --*;
             if row_no = cct_row then do;
-                if missing(status) then tmp = "^{style[foreground=cxC0504D]";       /* fab4b4: too light */
-                else                    tmp = "^{style[foreground=cx00b050]";       /* a7e8b8: too ligh t*/
+                if missing(status) then tmp = "^{style[foreground=cxC0504D]";
+                else                    tmp = "^{style[foreground=cx00b050]";
 
                 tmp = strip(tmp) || strip(raw_txt) || "}";
             end;
