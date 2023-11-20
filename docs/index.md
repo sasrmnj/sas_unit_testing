@@ -1,16 +1,15 @@
 # Why SAS Unit testing?
 
-Most companies using SAS have their own set of macro functions they use as part of standardizing of their processes.
+Most companies using SAS have their own set of macro functions as part of standardizing of their processes.
 
-However, creating and maintaining such a library is complex. Ensuring the reliability of the standards during their lifetime is critical as any inconsistency can impact deliverables.
+However, creating and maintaining such a library is complex. In particular, ensuring the reliability of the standards during their lifetime is critical as any inconsistency can impact deliverables.
 
-To avoid this, there is no other choice than performing validation. And so far, doing this into SAS means spending a lot of time.
+To avoid this, there is no other choice than performing validation.
 
-That's here a unit testing framework can help. The main benefits are:
-* Creating a validation plan is **user-friendly**: the framework handles the hard work; the users define and implement the test cases.
-* Executing a validation plan is as **easy** as running a SAS program...
-* ... and so it's super **fast**!
-* It adds **reliability** by allowing a full validation every time the code changes.
+That's here a unit testing framework provides several benefits:
+* The framework provides a set of functions to implement various scenarios. Thus, user focus on defining test cases whereas all the hard work is handled by the framework: users can focus on business requirements rather than technical stuff.
+* Executing a validation plan is as simple as running a SAS program: the process is so **repeatable** and **fast**
+* It adds **reliability** by performing a full test plan execution even for small updates. Thus, the side effects are annihilated.
 * It's **efficient** because the framework generates the validation documentation
 
 # How does it work?
@@ -18,7 +17,7 @@ That's here a unit testing framework can help. The main benefits are:
 This framework is split into several components to use like bricks:
 ![](sas_unit_testing.svg)
 
-Everything will be detailed in the following section
+The next sections will delve deeper into the core concept of the framwork.
 
 # Getting started
 
@@ -43,15 +42,38 @@ Before you can do any work with the framework, you must initialize it. This is d
 
 This function can be used as well to reset the framework.
 
-## 3 - Creating a testing group
-Once the framework has been initialized, you can create your first `testing group`. It serves as a **container** for the tests belonging to the validation of a **single** feature. This helps to keep things organized and clear for the reporting. To create a `testing group`, use the `ut_grp_init` function:
+## 3 - Enabling code coverage
+Code coverage is a feature that measures how much source code is executed by a test suite. The frameworks implements its own code coverage module to offer more flexibility than SAS embedded code coverage tool. To do so, the code coverage module analyses the source code of the SAS program to be validated:
+1) It identifies different execution branches
+2) It injects some trackers at specific statement of the source code
+3) The framework analyses how many trackers have been triggerd to determine a percentage of code execution.
+
+To enable to code coverage feature, invoke the `ut_cov_init` function:
+```sas
+%let modified_file=;
+
+%ut_cov_init(in_file=/../macro.sas, out_file=modified_file);
+
+%include "&modified_file.";
+```
+| Parameter | Purpose |
+|-----------|---------|
+| in_file | Path of the SAS code to validate |
+| out_file | Path of the SAS code amended with code coverage trackers (output value) |
+
+To not alter the original SAS program, a copy with code coverage trackers is created in a temporary directory. It is important, once `ut_cov_init` has been called, to include the modified file.
+
+## 4 - Creating a testing group
+Once the framework has been initialized, you can create your first `testing group`. It serves as a **container** for the tests belonging to the validation of a **single** feature. This helps to keep things organized and clear for the reporting.
+
+To create a `testing group`, use the `ut_grp_init` function:
 ```sas
 %ut_grp_init(description);
 ```
 
 The `description` is a short text used by the reporting module to describe the group.
 
-## 4 - Creating a test.
+## 5 - Creating a test.
 After a testing group has been created, you can define `tests`. They are composed of 2 steps:
 1) Running some code to test
 2) Evaluating the execution status
@@ -62,9 +84,9 @@ Performing a test means running some code to ensure it works as expected. Howeve
 ```sas
 %ut_run(
     stmt = %nrstr(
-        *-- Some SAS code to run --*;
-        *-- Issues raised here will not appear in the main SAS log --*;
-    )
+                *-- Some SAS code to run --*;
+                *-- Issues raised here will not appear in the main SAS log --*;
+            )
 );
 ```
 | Parameter | Purpose |
@@ -73,12 +95,11 @@ Performing a test means running some code to ensure it works as expected. Howeve
 | debug | When not null, disable the SAS log redirection to report the messages in the SAS log.<br>Value is `n` by default |
 
 ### Evaluate the execution status
-Once the code to be tested has been run, you can evaluate its execution status by using one ore more *assert* functions.\
-These functions embed everything needed to perform a test and log the result so they can be output by the reporting module:
+Once the code to be tested has been run, you can evaluate its execution status by using one ore more **assert** functions.\
+These functions embed everything needed to perform a test and log the status of that test so it can be output by the reporting module:
 1) Logging of the test to be performed (type of test)
-2) Testing
-3) Evaluation of the test status by comparing the result of the test vs the expected result of the test
-4) Building of test details for the reporting module.
+2) Status of the test by comparing the expected result vs the real resutl of the test
+3) Recording of test details for meaningful information in the output report
 
 It's also easy to create your own assert functions, using this template:
 ```sas
@@ -89,14 +110,14 @@ It's also easy to create your own assert functions, using this template:
     *-- Implement the logic of the assert here --*;
     *-- There are only 2 constraints: set the value of ut_tst_res & ut_tst_det --*;
 
-    *-- ut_tst_res is the result of your test. It will be compared to expected_result, if values match, the test is PASS, else the test if FAIL --*;
+    *-- ut_tst_res is the result of your test. It will be compared to expected_result, if values match, the test is PASS, else it is FAIL --*;
     %let ut_tst_res = PASS;
 
     *-- ut_tst_det provides details of the evaluation of ut_tst_res for the report. --*;
-    *-- It helps to understand why the test result is PASS or FAIL --*;
+    *-- It helps to understand what has been performed so a reviewer can easilty understand why the test result is PASS or FAIL --*;
     %let ut_tst_det = Details about the evaluation of ut_tst_res;
 
-    *-- Call to ut_log_result is mandatory: it evaluates to status of the test and log the results in a dataset for the reporting module --*;
+    *-- Call to ut_log_result is mandatory: it records the test in a dataset for the reporting module --*;
     %ut_log_result;
 %mend ut_assert_xxx;
 ```
@@ -255,7 +276,7 @@ Another option proposed by the framework consists in providing only 1 dataset wi
 | det_stmt                      | The SAS statement to define the value of the test details |
 | exp_status_var                | The variable name within `ds` that contains the expected status of the test |
 
-## 5 - Reporting.
+## 6 - Reporting.
 The last step of the validation plan consists in outputing the reporting document.\
 This is achieved with the `ut_report` function that automatically generates a PDF document that contains:
 1) A summary of the validation (who/when/overall status)\
@@ -264,3 +285,5 @@ This is achieved with the `ut_report` function that automatically generates a PD
     ![](rpt_02.png)
 3) The list of tests with their execution details\
     ![](rpt_03.png)
+4) A code coverage report\
+    ![](rpt_04.png)
