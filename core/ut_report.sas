@@ -1,7 +1,7 @@
-%macro ut_report(macro_name=, report_path=);
+%macro ut_report(test_suite=, report_path=);
 /*
     Macro to generate a PDF report of the tests performed.
-    macro_name:     name of the validated macro function
+    test_suite:     name of the test suite (identify with program or macro is valdiated)
     report_path:    full path to the PDF file to be created
 */
     *-- Exit if framework state is erroneous --*;
@@ -21,12 +21,12 @@
     options orientation=landscape;
     ods escapechar '^';
 
-    ods pdf file="&report_path./unit_testing_&macro_name._&yyyymmdd..pdf";
+    ods pdf file="&report_path./unit_testing_&test_suite._&yyyymmdd..pdf";
 
     title;
     footnote;
 
-    title1 justify=center height=12pt "&macro_name. - Validation report";
+    title1 justify=center height=12pt "&test_suite. - Test suite report";
     footnote1 justify=right height=10pt "^{thispage} | ^{lastpage}";
 
     proc sql noprint;
@@ -74,8 +74,8 @@
         attrib desc format=$50.;
         attrib value format=$100.;
 
-        desc = "Validation of macro";
-        value = strip("&macro_name.");
+        desc = "Test suite name";
+        value = strip("&test_suite.");
         output;
 
         desc = "Validation report run by";
@@ -307,15 +307,19 @@
 
             attrib tmp format=$1000.;
 
-            if first.cct_id and row_no > 1 then txt = repeat(' ', 8) || '...';
+            if first.cct_id then do;
+                txt = "";
+
+                if row_no > 1 then txt = repeat(' ', 8) || '...';
+            end;
 
             attrib row_no_str format=$10.;
             row_no_str = strip(put(row_no, 8.)) || '.';
 
             *-- Highlight tested code --*;
             if row_no = cct_row then do;
-                if missing(status) then tmp = "^{style[foreground=cxC0504D]";
-                else                    tmp = "^{style[foreground=cx00b050]";
+                if status then tmp = "^{style[foreground=cx00b050]";
+                else           tmp = "^{style[foreground=cxc0504d]";
 
                 tmp = strip(tmp) || strip(raw_txt) || "}";
             end;
