@@ -43,25 +43,23 @@ Before you can do any work with the framework, you must initialize it. This is d
 This function can be used as well to reset the framework.
 
 ## 3 - Enabling code coverage
-Code coverage is a feature that measures how much source code is executed by a test suite. The frameworks implements its own code coverage module to offer more flexibility than SAS embedded code coverage tool. To do so, the code coverage module analyses the source code of the SAS program to be validated:
-1) It identifies different execution branches
-2) It injects some trackers at specific statement of the source code
-3) The framework analyses how many trackers have been triggerd to determine a percentage of code execution.
+Code coverage is a feature that measures how much the source code is executed by a test suite. The frameworks implements its own code coverage module to offer more flexibility than the native SAS code coverage tool (in particular, this module allows nested macro functions).\
+To perform a code coverage analysis, the module performs the following:
+1) Identification of various execution branches
+2) Injection of trackers at the begining of each execution branches
+Then, during test suite execution, the framework identifies which trackers have been triggers to determine a percentage of code execution.
 
 To enable to code coverage feature, invoke the `ut_cov_init` function:
 ```sas
-%let modified_file=;
-
-%ut_cov_init(in_file=/../macro.sas, out_file=modified_file);
-
-%include "&modified_file.";
+%ut_cov_init(in_file=/../macro.sas);
 ```
 | Parameter | Purpose |
 |-----------|---------|
 | in_file | Path of the SAS code to validate |
 | out_file | Path of the SAS code amended with code coverage trackers (output value) |
 
-To not alter the original SAS program, a copy with code coverage trackers is created in a temporary directory. It is important, once `ut_cov_init` has been called, to include the modified file.
+To not alter the original SAS program, a copy (with the code coverage trackers) is created in a temporary directory. By default, `ut_cov_init` includes this modified file.\
+However, if needed, you can provide the name of a macro variable in `out_file`. In this case, `ut_cov_init` **does not** include the modified file but returns instead its path. It's up to you to include it later.
 
 ## 4 - Creating a testing group
 Once the framework has been initialized, you can create your first `testing group`. It serves as a **container** for the tests belonging to the validation of a **single** feature. This helps to keep things organized and clear for the reporting.
