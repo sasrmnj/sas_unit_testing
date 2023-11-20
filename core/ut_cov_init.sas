@@ -6,6 +6,7 @@
     Eventually, we can count how many trackers have been triggered to estimate the code coverage
     in_file:    path to the file with macro code to update for code coverage feature
     out_file:   name of a macro variable into which path to the file with code coverage implemented will be provided.
+                if omitted, the modified file is included.
 */
     *-- Exit if framework state is erroneous --*;
     %if &ut_state. %then %do;
@@ -24,12 +25,6 @@
         %return;
     %end;
 
-    %if %sysevalf(%superq(out_file) =, boolean) %then %do;
-        %put ERROR: OUT_FILE is mandatory when calling ut_cov_init;
-        %let ut_state = 1;
-        %return;
-    %end;
-
     *-- Update code coverage setting (1: enabled) --*;
     %let ut_cov = 1;
 
@@ -44,14 +39,14 @@
 
     filename i_file "&in_file.";
 
-    data _ut_code;
+    data raw_code;
         infile i_file length=line_len truncover;
 
         attrib  row_no  format=8.
-                raw_txt format=$2000.
-                txt     format=$2000.
                 txt_len format=8.
                 txt_off format=8.
+                raw_txt format=$2000.
+                txt     format=$2000.
         ;
 
         *-- Read the input file --*;
@@ -67,7 +62,7 @@
         txt = strip(raw_txt);
 
         *-- Define the length of the row --*;
-        txt_len = length(txt);
+        txt_len = length(raw_txt);
     run;
 
     filename i_file clear;
@@ -78,7 +73,7 @@
     *-------------------------------------------------------------*;
 
     data macro_code (drop = _:);
-        set _ut_code end=eof;
+        set raw_code end=eof;
 
         attrib  _flag   format=8.
                 _idx    format=8.
@@ -631,7 +626,7 @@
     proc sort data=macro_code; by cct_id row_no; run;
 
     data _ut_cct_state;
-        set macro_code (keep = cct_id row_no);
+        set macro_code (keep = cct_id row_no raw_txt);
         by cct_id row_no;
 
         attrib status format=8.;
@@ -642,9 +637,16 @@
 
 
     *-------------------------------------------------------------*;
-    *-- Return the path to the modified macro with cct embedded --*;
+    *--Include or returnt he path of the modified macro         --*;
     *-------------------------------------------------------------*;
-    %let &out_file. = &ut_work_dir./&macro_name.;
+    %if %sysevalf(%superq(out_file) ne, boolean) %then %do;
+        *-- out_file parameter provided, just return the modified file path --*;
+        %let &out_file. = &ut_work_dir./&macro_name.;
+    %end;
+    %else %do;
+        *-- out_file parameter omitted, include the modified file --*;
+        %include "&ut_work_dir./&macro_name.";
+    %end;
 
 
     *-------------------------------------------------------------*;
@@ -652,6 +654,6 @@
     *-------------------------------------------------------------*;
 
     proc datasets library=work nolist;
-        delete ins cct_ins;
+        delete raw_code macro_code ins cct_ins;
     run; quit;
 %mend ut_cov_init;
