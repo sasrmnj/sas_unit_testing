@@ -9,7 +9,7 @@
 *---------------------------------------------------------------------------------*;
 
 *-- Github repository --*;
-%let github_repo    = https://api.github.com/repos/jrsas/sas_unit_testing;
+%let github_repo    = https://api.github.com/repos/sasrmnj/sas_unit_testing;
 
 *-- Github token to upload file --*;
 %let github_token   = ;

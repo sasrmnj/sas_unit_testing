@@ -25,11 +25,11 @@ The next sections will delve deeper into the core concept of the framwork.
 Create a new SAS program and reference the framework.\
 Either use the main repository:
 ```sas
-filename utf url "https://raw.githubusercontent.com/jrsas/sas_unit_testing/main/unit_testing.sas";
+filename utf url "https://raw.githubusercontent.com/sasrmnj/sas_unit_testing/main/unit_testing.sas";
 %include utf;
 ```
 
-Or [download](https://raw.githubusercontent.com/jrsas/sas_unit_testing/main/unit_testing.sas) the framework and include it:
+Or [download](https://raw.githubusercontent.com/sasrmnj/sas_unit_testing/main/unit_testing.sas) the framework and include it:
 ```sas
 %include "/path/to/the/unit_testing.sas";
 ```
