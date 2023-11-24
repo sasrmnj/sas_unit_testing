@@ -35,12 +35,12 @@ Or [download](https://raw.githubusercontent.com/sasrmnj/sas_unit_testing/main/un
 ```
 
 ## 2 - Initializing the framework
-Before you can do any work with the framework, you must initialize it. This is done through the `ut_setup` function:
+Before using the framework, you must initialize it. This is done through the `ut_setup` function:
 ```sas
 %ut_setup;
 ```
 
-This function can be used as well to reset the framework.
+Tip: this function can be used as well to reset the framework.
 
 ## 3 - Enabling code coverage
 Code coverage is a feature that measures how much the source code is executed by a test suite. The frameworks implements its own code coverage module to offer more flexibility than the native SAS code coverage tool (in particular, this module allows nested macro functions).\
@@ -59,17 +59,18 @@ To enable to code coverage feature, invoke the `ut_cov_init` function:
 | out_file | Path of the SAS code amended with code coverage trackers (output value) |
 
 To not alter the original SAS program, a copy (with the code coverage trackers) is created in a temporary directory. By default, `ut_cov_init` includes this modified file.\
-However, if needed, you can provide the name of a macro variable in `out_file`. In this case, `ut_cov_init` **does not** include the modified file but returns instead its path. It's up to you to include it later.
+If you don't want to automatically include the modified file with code coverage trackers, you must provide the name of a macro variable in `out_file`. In this case, `ut_cov_init` **does not** include the modified file, instead it returns its path.
 
 ## 4 - Creating a testing group
-Once the framework has been initialized, you can create your first `testing group`. It serves as a **container** for the tests belonging to the validation of a **single** feature. This helps to keep things organized and clear for the reporting.
+Once the framework has been initialized, you can create your first `testing group`. It serves as a **container** for the tests belonging to the validation of a single feature. This helps to keep things organized and clear for the reporting.
 
 To create a `testing group`, use the `ut_grp_init` function:
 ```sas
 %ut_grp_init(description);
 ```
-
-The `description` is a short text used by the reporting module to describe the group.
+| Parameter | Purpose |
+|-----------|---------|
+| description | Short text to describe the group. It is displayed in the output report |
 
 ## 5 - Creating a test.
 After a testing group has been created, you can define `tests`. They are composed of 2 steps:
