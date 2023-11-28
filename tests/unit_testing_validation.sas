@@ -1,33 +1,23 @@
 /*
-    This script builds a SAS file that contains all the macros of the unit testing framework.
-    This allows to use the unit testing framework with a simple "include" statement.
+    This script allows to validate the SAS unit testing framework
 */
 
-*-- Path of the project --*;
-%let project_path       = ~/sas_unit_testing;
-
-*-- Path to the SAS file containing the macro to be tested --*;
-%let macro_path         = &project_path./unit_testing.sas;
-
-*-- Path to the unit testing framework --*;
-%let ut_framework       = &project_path./unit_testing.sas;
+*-- Load the unit testing framework --*;
+filename utf url "https://raw.githubusercontent.com/Gaadek/sas_unit_testing/main/unit_testing.sas";
+%include utf;
 
 *-- Report parameters --*;
-%let script_name        = unit_testing;
-%let report_path        = &project_path./tests/reports;
+%let test_suite     = unit_testing;
+%let report_path    = ~;
 
-***************************** Start of study-specific programming ******************************;
-
-
-*-- Load the unit testing framework --*;
-%include "&ut_framework.";
-
+*-- Working directory path --*;
+%let _work_dir      = %quote(%sysfunc(pathname(work)));
 
 *---------------------------------------------------------------------------------------------*;
 *-- Initialize the testing framework                                                        --*;
 *---------------------------------------------------------------------------------------------*;
 
-%ut_setup(in_file=&macro_path.);
+%ut_setup;
 
 *---------------------------------------------------------------------------------------------*;
 *-- testing                                                                                 --*;
@@ -87,7 +77,7 @@
 *-- Check the dataset created by ut_setup --*;
 
 *-- The expected dataset --*;
-data expected_dataset (drop = _i_);
+data expected_dataset;
     attrib  ut_grp_id       format=best.    label="Testing group ID"
             ut_grp_desc     format=$200.    label="Testing group description"
             ut_tst_seq      format=best.    label="Test ordering value"
@@ -102,16 +92,7 @@ data expected_dataset (drop = _i_);
 
     set _null_;
 
-    *-- Init all variables --*;
-    array my_chars[*] _character_;
-    do _i_=1 to dim(my_chars);
-        my_chars[_i_] = '';
-    end;
-
-    array my_nums[*] _numeric_;
-    do _i_=1 to dim(my_nums);
-        my_nums[_i_] = .;
-    end;
+    call missing(of _all_);
 run;
 
 %ut_assert_dataset_structure(
@@ -125,7 +106,7 @@ run;
 *-- Testing of "ut_grp_init"                                            --*;
 *-------------------------------------------------------------------------*;
 
-*-- Store the value of ut_grp_id before calling ut_grp_init --*;
+*-- Store the value of "ut_grp_id" before calling "ut_grp_init" --*;
 %let prv_ut_grp_id = &ut_grp_id.;
 
 *-- Set ut_tst_seq value to something <> 0 to ensure it is reset by ut_grp_init --*;
@@ -231,11 +212,8 @@ run;
 
 %ut_grp_init(description=Testing of "ut_search_log");
 
-
 *-- Create a dummy log file --*;
-%let work = %quote(%sysfunc(pathname(work)));
-
-filename fsample "&work./sample.log" lrecl=600;
+filename fsample "&_work_dir./sample.log" lrecl=600;
 
 data _null_;
     file fsample;
@@ -274,7 +252,7 @@ filename fsample;
 *-- note: use "ut_run" to capture WARNING/ERROR --*;
 %ut_run(
     stmt =  %nrstr(
-                %ut_search_log(log_file=&work./popcorn.log, log_type=, log_msg=, res_var=);
+                %ut_search_log(log_file=&_work_dir./popcorn.log, log_type=, log_msg=, res_var=);
             )
 );
 
@@ -287,7 +265,7 @@ filename fsample;
 *-- TEST: RES_VAR is mandatory --*;
 %ut_run(
     stmt =  %nrstr(
-                %ut_search_log(log_file=&work./sample.log, log_type=, log_msg=, res_var=);
+                %ut_search_log(log_file=&_work_dir./sample.log, log_type=, log_msg=, res_var=);
             )
 );
 
@@ -301,7 +279,7 @@ filename fsample;
 %let res=;
 
 *-- TEST: valid LOG_TYPE --*;
-%ut_search_log(log_file=&work./sample.log, log_type=OTHER, log_msg=, res_var=res);
+%ut_search_log(log_file=&_work_dir./sample.log, log_type=OTHER, log_msg=, res_var=res);
 
 %ut_assert_macro(
     description = %nrstr("ut_search_log" must return TRUE when LOG_TYPE type exists in the log file),
@@ -310,7 +288,7 @@ filename fsample;
 
 
 *-- TEST: invalid LOG_TYPE --*;
-%ut_search_log(log_file=&work./sample.log, log_type=NOTEXISTING, log_msg=, res_var=res);
+%ut_search_log(log_file=&_work_dir./sample.log, log_type=NOTEXISTING, log_msg=, res_var=res);
 
 %ut_assert_macro(
     description = %nrstr("ut_search_log" must return FALSE when LOG_TYPE type does not exist in the log file),
@@ -319,7 +297,7 @@ filename fsample;
 
 
 *-- TEST: valid LOG_MSG --*;
-%ut_search_log(log_file=&work./sample.log, log_type=, log_msg=message, res_var=res);
+%ut_search_log(log_file=&_work_dir./sample.log, log_type=, log_msg=message, res_var=res);
 
 %ut_assert_macro(
     description = %nrstr("ut_search_log" must return TRUE when LOG_MSG exists in the log file),
@@ -328,7 +306,7 @@ filename fsample;
 
 
 *-- TEST: invalid LOG_MSG --*;
-%ut_search_log(log_file=&work./sample.log, log_type=, log_msg=popcorn, res_var=res);
+%ut_search_log(log_file=&_work_dir./sample.log, log_type=, log_msg=popcorn, res_var=res);
 
 %ut_assert_macro(
     description = %nrstr("ut_search_log" must return FALSE when LOG_MSG does not exist in the log file),
@@ -337,7 +315,7 @@ filename fsample;
 
 
 *-- TEST: valid LOG_TYPE/LOG_MSG --*;
-%ut_search_log(log_file=&work./sample.log, log_type=WARNING, log_msg=message, res_var=res);
+%ut_search_log(log_file=&_work_dir./sample.log, log_type=WARNING, log_msg=message, res_var=res);
 
 %ut_assert_macro(
     description = %nrstr("ut_search_log" must return TRUE when LOG_TYPE/LOG_MSG exists in the log file),
@@ -346,7 +324,7 @@ filename fsample;
 
 
 *-- TEST: invalid LOG_TYPE/LOG_MSG --*;
-%ut_search_log(log_file=&work./sample.log, log_type=WARNING, log_msg=error, res_var=res);
+%ut_search_log(log_file=&_work_dir./sample.log, log_type=WARNING, log_msg=error, res_var=res);
 
 %ut_assert_macro(
     description = %nrstr("ut_search_log" must return FALSE when LOG_TYPE/LOG_MSG does not exist in the log file),
@@ -355,7 +333,7 @@ filename fsample;
 
 
 *-- TEST: ut_search_log must be case insensitive --*;
-%ut_search_log(log_file=&work./sample.log, log_type=ErrOr, log_msg=MeSsaGe, res_var=res);
+%ut_search_log(log_file=&_work_dir./sample.log, log_type=ErrOr, log_msg=MeSsaGe, res_var=res);
 
 %ut_assert_macro(
     description = %nrstr("ut_search_log" is not case sensitive),
@@ -364,7 +342,7 @@ filename fsample;
 
 
 *-- TEST: ut_search_log must be able to search values reported split in the log --*;
-%ut_search_log(log_file=&work./sample.log, log_msg=%str(a very long message with words cut in the middle and leading/trailing spacing characters to ensure the search can be performed accross multiple log lines), res_var=res);
+%ut_search_log(log_file=&_work_dir./sample.log, log_msg=%str(a very long message with words cut in the middle and leading/trailing spacing characters to ensure the search can be performed accross multiple log lines), res_var=res);
 
 %ut_assert_macro(
     description = %nrstr("ut_search_log" can search values split into multiple log lines),
@@ -374,12 +352,12 @@ filename fsample;
 
 *-- TEST: call to "ut_search_log" must NOT increment ut_grp_id by 1 --*;
 
-*-- Store ut_tst_seq before calling ut_assert_log --*;
+*-- Store "ut_tst_seq" before calling "ut_search_log" --*;
 %let prv_ut_tst_seq = &ut_tst_seq.;
 
-%ut_search_log(log_file=&work./sample.log, log_type=ErrOr, log_msg=MeSsaGe, res_var=res);
+%ut_search_log(log_file=&_work_dir./sample.log, log_type=ErrOr, log_msg=MeSsaGe, res_var=res);
 
-*-- Store ut_tst_seq after calling ut_assert_log --*;
+*-- Store "ut_tst_seq" after calling "ut_search_log" --*;
 %let cur_ut_tst_seq = &ut_tst_seq.;
 
 *-- Ensure ut_tst_seq did not change --*;
@@ -395,9 +373,7 @@ filename fsample;
 
 %ut_grp_init(description=Testing of "ut_assert_log");
 
-*-- TEST: call to "ut_assert_log" must increment ut_grp_id by 1 --*;
-
-*-- Store ut_tst_seq before calling ut_assert_log --*;
+*-- Store the value of "ut_tst_seq" before calling "ut_assert_log" --*;
 %let prv_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_log(
@@ -405,7 +381,7 @@ filename fsample;
     log_msg     = note
 );
 
-*-- Store ut_tst_seq after calling ut_assert_log --*;
+*-- Store the value of "ut_tst_seq" after calling "ut_assert_log" --*;
 %let cur_ut_tst_seq = &ut_tst_seq.;
 
 *-- Ensure ut_tst_seq has been incremented by ut_assert_log --*;
@@ -413,7 +389,6 @@ filename fsample;
     description = "ut_assert_log" must increment ut_tst_seq by 1 (test increment),
     stmt        = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 1)
 );
-
 
 *-- TEST: "ut_assert_log" must allow to search specific text into a log file  --*;
 %ut_run(
@@ -440,7 +415,7 @@ filename fsample;
 
 %ut_grp_init(description=Testing of "ut_assert_error");
 
-*-- TEST: call to "ut_assert_error" must increment ut_grp_id by 1 --*;
+*-- Store the value of "ut_tst_seq" before calling "ut_assert_error" --*;
 %let prv_ut_tst_seq = &ut_tst_seq.;
 
 *-- Raise an error so the call to ut_assert_error will not appear as a validation error --*;
@@ -454,13 +429,13 @@ filename fsample;
     description = "ut_assert_error" must increment ut_tst_seq by 1 (increment)
 );
 
+*-- Store the value of "ut_tst_seq" after calling "ut_assert_error" --*;
 %let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
     description = "ut_assert_error" must increment ut_tst_seq by 1 (test increment),
     stmt        = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 1)
 );
-
 
 *-- TEST: in case of error --*;
 
@@ -514,13 +489,14 @@ filename fsample;
 
 %ut_grp_init(description=Testing of "ut_assert_noerror");
 
-*-- TEST: call to "ut_assert_noerror" must increment ut_grp_id by 1 --*;
+*-- Store the value of "ut_tst_seq" before calling "ut_assert_noerror" --*;
 %let prv_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_noerror(
     description     = %nrstr("ut_assert_noerror" must increment ut_tst_seq by 1 (increment))
 );
 
+*-- Store the value of "ut_tst_seq" after calling "ut_assert_noerror" --*;
 %let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
@@ -564,7 +540,7 @@ filename fsample;
 
 %ut_grp_init(description=Testing of "ut_assert_warning");
 
-*-- TEST: call to "ut_assert_warning" must increment ut_grp_id by 1 --*;
+*-- Store the value of "ut_tst_seq" before calling "ut_assert_warning" --*;
 %let prv_ut_tst_seq = &ut_tst_seq.;
 
 *-- Raise a warning so the call to ut_assert_warning will not appear as a validation error --*;
@@ -578,6 +554,7 @@ filename fsample;
     description     = %nrstr("ut_assert_warning" must increment ut_tst_seq by 1 (increment))
 );
 
+*-- Store the value of "ut_tst_seq" after calling "ut_assert_warning" --*;
 %let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
@@ -636,13 +613,14 @@ filename fsample;
 
 %ut_grp_init(description=Testing of "ut_assert_nowarning");
 
-*-- TEST: call to "ut_assert_nowarning" must increment ut_grp_id by 1 --*;
+*-- Store the value of "ut_tst_seq" before calling "ut_assert_nowarning" --*;
 %let prv_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_nowarning(
     description     = %nrstr("ut_assert_nowarning" must increment ut_tst_seq by 1)
 );
 
+*-- Store the value of "ut_tst_seq" after calling "ut_assert_nowarning" --*;
 %let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
@@ -686,13 +664,14 @@ filename fsample;
 
 %ut_grp_init(description=Testing of "ut_assert_noissue");
 
-*-- TEST: call to "ut_assert_noissue" must increment ut_grp_id by 1 --*;
+*-- Store the value of "ut_tst_seq" before calling "ut_assert_noissue" --*;
 %let prv_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_noissue(
     description     = %nrstr("ut_assert_noissue" must increment ut_tst_seq by 1)
 );
 
+*-- Store the value of "ut_tst_seq" after calling "ut_assert_noissue" --*;
 %let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
@@ -766,33 +745,40 @@ filename fsample;
 
 %ut_grp_init(description=Testing of "ut_assert_file");
 
-*-- TEST: call to "ut_assert_file" must increment ut_grp_id by 1 --*;
+*-- Create a dummy log file --*;
+filename fsample "&_work_dir./sample.log" lrecl=600;
+
+data _null_;
+    file fsample;
+    put ;
+run;
+
+filename fsample;
+
+*-- Store the value of "ut_tst_seq" before calling "ut_assert_file" --*;
 %let prv_ut_tst_seq = &ut_tst_seq.;
-
-%ut_assert_file(
-    description = %nrstr("ut_assert_file" must increment ut_tst_seq by 1 (increment)),
-    filepath    = &macro_path.
-);
-
-%let cur_ut_tst_seq = &ut_tst_seq.;
-
-%ut_assert_macro(
-    description = %nrstr("ut_assert_file" must increment ut_tst_seq by 1 (test)),
-    stmt        = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 1)
-);
 
 *-- Testing in case of existing file --*;
 %ut_assert_file(
-    description     = %nrstr("ut_assert_file" in case of existing file must be PASS),
-    filepath        = &macro_path.
+    description = %nrstr("ut_assert_file" in case of existing file must be PASS),
+    filepath    = &_work_dir./sample.log
 );
 
 *-- Testing in case of existing file --*;
 %ut_assert_file(
     description     = %nrstr("ut_assert_file" in case of non existing file must be FAIL),
-    filepath        = &macro_path._not_valid,
+    filepath        = &_work_dir./not_existing.log,
     expected_result = FAIL
 );
+
+*-- Store the value of "ut_tst_seq" after calling "ut_assert_file" --*;
+%let cur_ut_tst_seq = &ut_tst_seq.;
+
+%ut_assert_macro(
+    description = %nrstr("ut_assert_file" must increment ut_tst_seq by 1 (test)),
+    stmt        = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 2)
+);
+
 
 
 *-------------------------------------------------------------------------*;
@@ -801,28 +787,14 @@ filename fsample;
 
 %ut_grp_init(description=Testing of "ut_assert_macro");
 
-*-- TEST: call to "ut_assert_macro" must increment ut_grp_id by 1 --*;
+*-- Store the value of "ut_tst_seq" before calling "ut_assert_macro" --*;
 %let prv_ut_tst_seq = &ut_tst_seq.;
-
-%ut_assert_macro(
-    description = %nrstr("ut_assert_macro" must increment ut_tst_seq by 1 (increment)),
-    stmt        = %nrstr(1 = 1)
-);
-
-%let cur_ut_tst_seq = &ut_tst_seq.;
-
-%ut_assert_macro(
-    description = %nrstr("ut_assert_macro" must increment ut_tst_seq by 1 (test)),
-    stmt        = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 1)
-);
-
 
 *-- TEST: valid test --*;
 %ut_assert_macro(
     description     = %nrstr("ut_assert_macro" in case of valid and true statement must be PASS),
     stmt            = %nrstr(&syscc. = &syscc.)
 );
-
 
 *--TEST: invalid test --*;
 %ut_assert_macro(
@@ -831,6 +803,15 @@ filename fsample;
     expected_result = FAIL
 );
 
+*-- Store the value of "ut_tst_seq" after calling "ut_assert_macro" --*;
+%let cur_ut_tst_seq = &ut_tst_seq.;
+
+%ut_assert_macro(
+    description = %nrstr("ut_assert_macro" must increment ut_tst_seq by 1 (test)),
+    stmt        = %nrstr(&cur_ut_tst_seq. = &prv_ut_tst_seq. + 2)
+);
+
+
 
 *-------------------------------------------------------------------------*;
 *-- Testing of "ut_assert_dataset_structure"                            --*;
@@ -838,7 +819,7 @@ filename fsample;
 
 %ut_grp_init(description=Testing of "ut_assert_dataset_structure");
 
-*-- TEST: call to "ut_assert_dataset_structure" must increment ut_grp_id by 1 --*;
+*-- Store the value of "ut_tst_seq" before calling "ut_assert_dataset_structure" --*;
 %let prv_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_dataset_structure(
@@ -847,6 +828,7 @@ filename fsample;
     ds_02       = _ut_results
 );
 
+*-- Store the value of "ut_tst_seq" after calling "ut_assert_dataset_structure" --*;
 %let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
@@ -1090,5 +1072,6 @@ run;
 *-------------------------------------------------------------------------*;
 
 %ut_report(
+    test_suite  = &test_suite.,
     report_path = &report_path.
 );
