@@ -39,7 +39,7 @@
 
     filename i_file "&in_file.";
 
-    data raw_code;
+    data _ut_code;
         infile i_file length=line_len truncover;
 
         attrib  row_no  format=8.
@@ -73,7 +73,7 @@
     *-------------------------------------------------------------*;
 
     data macro_code (drop = _:);
-        set raw_code end=eof;
+        set _ut_code end=eof;
 
         attrib  _flag   format=8.
                 _idx    format=8.
@@ -657,6 +657,6 @@
     *-------------------------------------------------------------*;
 
     proc datasets library=work nolist;
-        delete raw_code macro_code ins cct_ins;
+        delete macro_code ins cct_ins;
     run; quit;
 %mend ut_cov_init;
