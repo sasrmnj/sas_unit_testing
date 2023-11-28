@@ -641,7 +641,7 @@
     *-------------------------------------------------------------*;
     %if %sysevalf(%superq(out_file) ne, boolean) %then %do;
         *-- Create a global variable if needed --*;
-        %if not %symexit(&out_file.) %then %global &out_file.;
+        %if not %symexist(&out_file.) %then %global &out_file.;
 
         *-- out_file parameter provided, just return the modified file path --*;
         %let &out_file. = &ut_work_dir./&macro_name.;
