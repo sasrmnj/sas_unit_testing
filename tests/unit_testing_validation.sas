@@ -117,7 +117,7 @@ run;
 
 %ut_grp_init(description=&custom_desc.);
 
-*-- Copy value of ut_tst_seq because any unit testing helper will update that value --*;
+*-- Store the value of "ut_tst_seq" because any unit testing helper will update that value --*;
 %let ut_tst_seq_copy = &ut_tst_seq.;
 
 %ut_assert_macro(
@@ -917,7 +917,7 @@ run;
 
 %ut_grp_init(description=Testing of "ut_assert_dataset_content");
 
-*-- TEST: call to "ut_assert_dataset_content" must increment ut_grp_id by 1 --*;
+*-- Store the value of "ut_tst_seq" before calling "ut_assert_dataset_content" --*;
 %let prv_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_dataset_content(
@@ -926,6 +926,7 @@ run;
     ds_02       = _ut_results
 );
 
+*-- Store the value of "ut_tst_seq" after calling "ut_assert_dataset_content" --*;
 %let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
@@ -997,7 +998,7 @@ run;
 
 %ut_grp_init(description=Testing of "ut_assert_dataset");
 
-*-- TEST: call to "ut_assert_dataset" must increment ut_grp_id by 1 --*;
+*-- Store the value of "ut_tst_seq" before calling "ut_assert_dataset" --*;
 %let prv_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_dataset(
@@ -1006,6 +1007,7 @@ run;
     ds_02       = _ut_results
 );
 
+*-- Store the value of "ut_tst_seq" after calling "ut_assert_dataset" --*;
 %let cur_ut_tst_seq = &ut_tst_seq.;
 
 %ut_assert_macro(
