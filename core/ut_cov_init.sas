@@ -626,7 +626,7 @@
     proc sort data=macro_code; by cct_id row_no; run;
 
     data _ut_cct_state;
-        set macro_code (keep = cct_id row_no raw_txt);
+        set macro_code (keep = cct_id row_no raw_txt where = (cct_id > 0));
         by cct_id row_no;
 
         attrib status format=8.;
@@ -637,7 +637,7 @@
 
 
     *-------------------------------------------------------------*;
-    *--Include or returnt he path of the modified macro         --*;
+    *-- Include or return the path of the modified macro        --*;
     *-------------------------------------------------------------*;
     %if %sysevalf(%superq(out_file) ne, boolean) %then %do;
         *-- Create a global variable if needed --*;
