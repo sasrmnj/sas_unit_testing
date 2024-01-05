@@ -1925,6 +1925,7 @@ options cmplib=work.custom;
     *-- If code coverage is enabled --*;
     %if &ut_cov. %then %do;
         ods proclabel 'Code coverage report';
+        title2 "Code coverage report";
 
         *-- Retrieve 2 lines before/after the tested line of code --*;
         proc sql noprint;
