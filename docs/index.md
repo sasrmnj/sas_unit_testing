@@ -7,10 +7,10 @@ However, creating and maintaining such a library is complex. In particular, ensu
 To avoid this, there is no other choice than performing validation.
 
 That's here a unit testing framework provides several benefits:
-* The framework provides a set of functions to implement various scenarios. Thus, user focus on defining test cases whereas all the hard work is handled by the framework: users can focus on business requirements rather than technical stuff.
-* Executing a validation plan is as simple as running a SAS program: the process is so **repeatable** and **fast**
-* It adds **reliability** by performing a full test plan execution even for small updates. Thus, the side effects are annihilated.
-* It's **efficient** because the framework generates the validation documentation
+* It's **efficient** because when using such a tool, users focus on writting tests cases that covers business requirements. Technical stuff is covered by the framework.
+* It's **fast** because running a validation plan is as simple as running a SAS program and completes in seconds.
+* It's **reliable** because the full validation plan is run even in case of minor updates: side effects are annihilated.
+* It's **functional** because the framework generates the validation documentation.
 
 # How does it work?
 
