@@ -1,7 +1,7 @@
 /**************************************************************************************************************************************************
 Program Name   : unit_testing.sas
 Purpose        : SAS unit testing framework
-Date created   : 05DEC2023
+Date created   : 05FEB2024
 Details        : The `build.sas` file in the repo is used to create this file.
 ***************************************************************************************************************************************************/
 
@@ -212,7 +212,7 @@ options cmplib=work.custom;
     data _ut_code;
         infile i_file length=line_len truncover;
 
-        attrib  row_no  format=8.
+        attrib  row_no  format=best.
                 txt_len format=8.
                 txt_off format=8.
                 raw_txt format=$2000.
@@ -224,7 +224,7 @@ options cmplib=work.custom;
 
         *-- Define the row number in the raw input file --*;
         row_no  = _n_;
-
+        
         *-- Define the offset (indentation) of the row --*;
         txt_off = notspace(raw_txt);
 
@@ -312,8 +312,11 @@ options cmplib=work.custom;
     *-- Split multiples statements reported on the same line    --*;
     *-------------------------------------------------------------*;
 
+    proc sort data=macro_code; by row_no; run;
+    
     data macro_code (drop = _:);
         set macro_code;
+        by row_no;
 
         attrib  _flag format=8.
                 _bak format=$2000.
@@ -333,8 +336,9 @@ options cmplib=work.custom;
 
             *-- Output text until the found semicolon --*;
             txt = substr(txt, 1, _idx);
+            row_no = row_no + 0.01;
             output;
-
+            
             *-- Restore backup text into txt if any --*;
             txt = _bak;
 
@@ -430,7 +434,7 @@ options cmplib=work.custom;
 
 
     *-------------------------------------------------------------*;
-    *-- Insert do..end statements to allow cct code injection   --*;
+    *-- Insert do..end statements when not present             --*;
     *-------------------------------------------------------------*;
 
     *-- Identify then/else statements not followed by a do..end block. --*;
@@ -659,7 +663,7 @@ options cmplib=work.custom;
         attrib _flag format=8.;
         retain _flag 0;
 
-        attrib  cct_row format=8.
+        attrib  cct_row format=best.
                 cct_pos format=8.
                 cct_typ format=$1.
         ;
