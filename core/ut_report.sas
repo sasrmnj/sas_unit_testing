@@ -318,7 +318,7 @@
             row_no_str = strip(put(row_no, 8.)) || '.';
 
             *-- Highlight tested code --*;
-            if row_no = cct_row then do;
+            if row_no = floor(cct_row) then do;
                 if status then tmp = "^{style[foreground=cx00b050]";
                 else           tmp = "^{style[foreground=cxc0504d]";
 
