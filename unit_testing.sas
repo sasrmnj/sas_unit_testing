@@ -1235,9 +1235,20 @@ options cmplib=work.custom;
         bit #15 (16384) BY variables do not match
         bit #16 (32768) Fatal error, comparison not done
 
-        So any code >= 64 reports an issue with the content
+        To define if content mismatch, we focus on the following bits:
+        7, 8, 9, 10, 13, 14, 15 & 16
+        All other bits are not significant in term of content mismatch
     --*;
-    %if &sysinfo. < 64  %then %do;
+
+    *-- Define a binary mask to keep only bits 7 to 10 and 13 to 16 --*;
+    %local bmask;
+    %let bmask = %sysfunc(inputn(1111001111000000, binary16.));
+
+    *-- Use sysinfo and bmask to identify if any relevant bit is active --*;
+    %local rec;
+    %let res = %sysfunc(band(&_sysinfo, &bmask));
+    
+    %if &res. = 0  %then %do;
         %let ut_tst_res = PASS;
         %let ut_tst_det = Datasets &ds_01. and &ds_02. have the same content;
     %end;
