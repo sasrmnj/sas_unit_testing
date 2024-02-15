@@ -85,7 +85,8 @@
 
             *-- Condition to start filling the buffer used to search text --*;
             if      flag = 0
-                and prxmatch("/^[a-z]/oi", strip(log_txt))
+                /*and prxmatch("/^[a-z]/oi", strip(log_txt))*/
+                and not missing(log_txt)
                 and prxmatch("/^&log_type..*/oi", strip(log_txt))
             then do;
                 flag        = 1;
