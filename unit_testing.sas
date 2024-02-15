@@ -670,7 +670,7 @@ options cmplib=work.custom;
 
         retain cct_typ;
 
-        if not missing(txt) and stmt_typ ne 'fcmp' and _flag = 0 then do;
+        if not missing(txt) and stmt_typ not in ('fcmp', 'proc') and _flag = 0 then do;
             *-- Add tracker after labels ('%xxx:') --*;
             _rgx    = prxparse('/%[a-z\d]+:/');
             _start  = 1;
