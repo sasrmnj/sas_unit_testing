@@ -1198,7 +1198,7 @@ options cmplib=work.custom;
 %mend ut_assert_dataset;
 
 
-%macro ut_assert_dataset_content(description=, ds_01=, ds_02=, expected_result=PASS);
+%macro ut_assert_dataset_content(description=, ds_01=, ds_02=, bmask=1111111100000000, expected_result=PASS);
 /*
     To be used to assert dataset contents are equals
     description:        description to explain why ds_01 content should be equal to ds_02 content
@@ -1235,18 +1235,17 @@ options cmplib=work.custom;
         bit #15 (16384) BY variables do not match
         bit #16 (32768) Fatal error, comparison not done
 
-        To define if content mismatch, we focus on the following bits:
-        7, 8, 9, 10, 13, 14, 15 & 16
-        All other bits are not significant in term of content mismatch
+        To define if content mismatch, we focus on bits 7 to 16
+        Bits 1 to 8 are not significant in the scope of content mismatch
     --*;
 
-    *-- Define a binary mask to keep only bits 7 to 10 and 13 to 16 --*;
-    %local bmask;
-    %let bmask = %sysfunc(inputn(1111001111000000, binary16.));
+    *-- Convert the binary mask to numeric --*;
+    %local nmask;
+    %let nmask = %sysfunc(inputn(&bmask., binary16.));
 
     *-- Use sysinfo and bmask to identify if any relevant bit is active --*;
     %local rec;
-    %let res = %sysfunc(band(&_sysinfo, &bmask));
+    %let res = %sysfunc(band(&sysinfo., &nmask.));
     
     %if &res. = 0  %then %do;
         %let ut_tst_res = PASS;
