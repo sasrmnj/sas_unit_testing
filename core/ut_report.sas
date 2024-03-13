@@ -341,13 +341,18 @@
             style (report)={background=white}
             ;
 
-            column dummy txt;
+            column dummy txt status;
 
             define dummy        / order noprint;
             define txt          / display "SAS statement" style(column)={font_face=courier};
+            define status       / display noprint;
 
             *-- This hack removes TOC entries --*;
             break before dummy / page contents='';
+
+            compute status;
+                if status ne 1 then call define(_row_, "style", "style={background=cxededed}");
+            endcomp;
         run;
     %end;
 
