@@ -14,13 +14,13 @@
 
     %ut_tst_init(type=ut_assert_warning, description=&description., expected_result=&expected_result.);
 
+    *-- Remove the leading "WARNING:" tag from the warning message if any --*;
+    %let warning_msg = %sysfunc(prxchange(s/^WARNING:\s*(.*)$/$1/oi, -1, %nrbquote(&warning_msg.)));
+
     %if &syscc. %then %do;
         %if %sysevalf(%superq(warning_msg) ne, boolean) %then %do;
             *-- If expected warning message is provided, then SAS warning message must match --*;
-            
-            *-- Remove the leading "WARNING:" tag from the warning message if any --*;
-            %let warning_msg = %sysfunc(prxchange(s/^WARNING:\s*(.*)$/$1/oi, -1, %nrbquote(&warning_msg.)));
-
+    
             *-- Define a macro variable to store the result of ut_search_log --*;
             %local ut_search_log;
             %let ut_search_log=;
