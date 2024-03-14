@@ -17,18 +17,24 @@
     *-- Remove the leading "ERROR:" tag if any --*;
     %let error_msg = %sysfunc(prxchange(s/^ERROR:\s*(.*)$/$1/oi, -1, %nrbquote(&error_msg.)));
 
-    %if %sysevalf(%superq(syserrortext) ne, boolean) or &syscc. > 4 %then %do;
-        *-- Overall status is erroneous (either error message or error code) --*;
-        *-- http://support.sas.com/kb/35/553.html --*;
+    %if &syscc. %then %do;
         %if %sysevalf(%superq(error_msg) ne, boolean) %then %do;
             *-- If expected error message is provided, then SAS error message must match --*;
-            %if %sysfunc(find(%nrbquote(&syserrortext.), %nrbquote(&error_msg.), i)) %then %do;
+            
+            *-- Define a macro variable to store the result of ut_search_log --*;
+            %local ut_search_log;
+            %let ut_search_log=;
+
+            *-- Search for the error message in the SAS log --*;
+            %ut_search_log(log_type=error, log_msg=%nrbquote(&error_msg.), res_var=ut_search_log);
+
+            %if &ut_search_log. = TRUE %then %do;
                 %let ut_tst_res = PASS;
-                %let ut_tst_det = Expected error is:^n%nrbquote(&error_msg.)^n^nError reported by SAS is:^n%nrbquote(&syserrortext.);
+                %let ut_tst_det = Expected error:^n%nrbquote(&error_msg.)^n^nfound in the SAS log;
             %end;
             %else %do;
                 %let ut_tst_res = FAIL;
-                %let ut_tst_det = Expected error is:^n%nrbquote(&error_msg.)^n^nError reported by SAS is:^n%nrbquote(&syserrortext.);
+                %let ut_tst_det = Expected error:^n%nrbquote(&error_msg.)^n^nnot found in the SAS log;
             %end;
         %end;
         %else %do;
