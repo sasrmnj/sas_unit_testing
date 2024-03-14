@@ -1433,32 +1433,37 @@ options cmplib=work.custom;
 
     %ut_tst_init(type=ut_assert_error, description=&description., expected_result=&expected_result.);
 
-    *-- Remove the leading "ERROR:" tag if any --*;
-    %let error_msg = %sysfunc(prxchange(s/^ERROR:\s*(.*)$/$1/oi, -1, %nrbquote(&error_msg.)));
+	*-- Define a macro variable to store the result of ut_search_log --*;
+	%local ut_search_log;
+	%let ut_search_log=;
 
-    %if &syscc. %then %do;
-        %if %sysevalf(%superq(error_msg) ne, boolean) %then %do;
-            *-- If expected error message is provided, then SAS error message must match --*;
-            
-            *-- Define a macro variable to store the result of ut_search_log --*;
-            %local ut_search_log;
-            %let ut_search_log=;
+	%if %sysevalf(%superq(error_msg) ne, boolean) %then %do;
+	    *-- Remove the leading "ERROR:" tag from the error message if any --*;
+        %let error_msg = %sysfunc(prxchange(s/^ERROR:\s*(.*)$/$1/oi, -1, %nrbquote(&error_msg.)));
 
-            *-- Search for the error message in the SAS log --*;
-            %ut_search_log(log_type=error, log_msg=%nrbquote(&error_msg.), res_var=ut_search_log);
+		*-- Search for the error message in the SAS log --*;
+		%ut_search_log(log_type=error, log_msg=%nrbquote(&error_msg.), res_var=ut_search_log);
 
-            %if &ut_search_log. = TRUE %then %do;
-                %let ut_tst_res = PASS;
-                %let ut_tst_det = Expected error:^n%nrbquote(&error_msg.)^n^nfound in the SAS log;
-            %end;
-            %else %do;
-                %let ut_tst_res = FAIL;
-                %let ut_tst_det = Expected error:^n%nrbquote(&error_msg.)^n^nnot found in the SAS log;
-            %end;
+		%if &ut_search_log. = TRUE %then %do;
+			%let ut_tst_res = PASS;
+			%let ut_tst_det = Expected error:^n%nrbquote(&error_msg.)^n^nfound in the SAS log;
+		%end;
+		%else %do;
+			%let ut_tst_res = FAIL;
+			%let ut_tst_det = Expected error:^n%nrbquote(&error_msg.)^n^nnot found in the SAS log;
+		%end;
+	%end;
+	%else %do;
+		*-- Search for error in the SAS log --*;
+        %ut_search_log(log_type=error, log_msg=, res_var=ut_search_log);
+        
+		%if &ut_search_log. = TRUE %then %do;
+            %let ut_tst_res = PASS;
+            %let ut_tst_det = Error found in the SAS log;
         %end;
         %else %do;
-            %let ut_tst_res = PASS;
-            %let ut_tst_det = Error reported by SAS is:^n%nrbquote(&syserrortext.);
+            %let ut_tst_res = FAIL;
+            %let ut_tst_det = No error found in the SAS log;
         %end;
     %end;
 
@@ -1655,32 +1660,37 @@ options cmplib=work.custom;
 
     %ut_tst_init(type=ut_assert_warning, description=&description., expected_result=&expected_result.);
 
-    *-- Remove the leading "WARNING:" tag from the warning message if any --*;
-    %let warning_msg = %sysfunc(prxchange(s/^WARNING:\s*(.*)$/$1/oi, -1, %nrbquote(&warning_msg.)));
+    *-- Define a macro variable to store the result of ut_search_log --*;
+    %local ut_search_log;
+    %let ut_search_log=;
 
-    %if &syscc. %then %do;
-        %if %sysevalf(%superq(warning_msg) ne, boolean) %then %do;
-            *-- If expected warning message is provided, then SAS warning message must match --*;
+    %if %sysevalf(%superq(warning_msg) ne, boolean) %then %do;
+        *-- Remove the leading "WARNING:" tag from the warning message if any --*;
+        %let warning_msg = %sysfunc(prxchange(s/^WARNING:\s*(.*)$/$1/oi, -1, %nrbquote(&warning_msg.)));
     
-            *-- Define a macro variable to store the result of ut_search_log --*;
-            %local ut_search_log;
-            %let ut_search_log=;
+        *-- Search for the warning message in the SAS log --*;
+        %ut_search_log(log_type=warning, log_msg=%nrbquote(&warning_msg.), res_var=ut_search_log);
 
-            *-- Search for the warning message in the SAS log --*;
-            %ut_search_log(log_type=warning, log_msg=%nrbquote(&warning_msg.), res_var=ut_search_log);
-
-            %if &ut_search_log. = TRUE %then %do;
-                %let ut_tst_res = PASS;
-                %let ut_tst_det = Expected warning:^n%nrbquote(&warning_msg.)^n^nfound in the SAS log;
-            %end;
-            %else %do;
-                %let ut_tst_res = FAIL;
-                %let ut_tst_det = Expected warning:^n%nrbquote(&warning_msg.)^n^nnot found in the SAS log;
-            %end;
+        %if &ut_search_log. = TRUE %then %do;
+            %let ut_tst_res = PASS;
+            %let ut_tst_det = Expected warning:^n%nrbquote(&warning_msg.)^n^nfound in the SAS log;
         %end;
         %else %do;
+            %let ut_tst_res = FAIL;
+            %let ut_tst_det = Expected warning:^n%nrbquote(&warning_msg.)^n^nnot found in the SAS log;
+        %end;
+    %end;
+    %else %do;
+        *-- Search for warning in the SAS log --*;
+        %ut_search_log(log_type=warning, log_msg=, res_var=ut_search_log);
+
+        %if &ut_search_log. = TRUE %then %do;
             %let ut_tst_res = PASS;
-            %let ut_tst_det = Warning reported by SAS is:^n%nrbquote(&syswarningtext.);
+            %let ut_tst_det = Warning found in the SAS log;
+        %end;
+        %else %do;
+            %let ut_tst_res = FAIL;
+            %let ut_tst_det = No warning found in the SAS log;
         %end;
     %end;
 
